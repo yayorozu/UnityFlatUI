@@ -65,12 +65,14 @@
 				float4 vertex : SV_POSITION;
 				fixed4 color : COLOR;
 				fixed4 tangent : TANGENT0;
+				float4 worldPosition : TEXCOORD4;
 			};
 			
 			v2f vert(appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.worldPosition = v.vertex;
 				o.uv = v.uv;
 				o.texcoord1 = v.texcoord1;
 				o.texcoord2 = v.texcoord2;
@@ -78,6 +80,8 @@
 				o.tangent = v.tangent;
 				return o;
 			}
+			
+			float4 _ClipRect;
 
 			// 負数:0, 正数:1 に変換
 			// 条件を見たしているかどうかチェック
@@ -92,20 +96,18 @@
 				fixed height = i.texcoord2.y;
 				
 				half4 orig = i.color;
+				half4 outline = half4(0, 0, 0, 1);
 				float r = min(width, height) * radius;
 				float2 XY = float2(i.uv.x * width, i.uv.y * height);
 				
 				// Calc Distance from each center of circle
-				// LeftTop, Center:( r, r)               
+				// LeftTop, Center:(r, r)
 				float d_lt = (XY.x - r) * (XY.x - r) + (XY.y - r) * (XY.y - r);
-				
-				// LeftBot, Center:( r, h-r)
+				// LeftBot, Center:(r, h - r)
 				float d_lb = (XY.x - r) * (XY.x - r) + (XY.y- (height - r)) * (XY.y - (height - r));
-				
-				// RightTop, Center:( w-r, r)
+				// RightTop, Center:(w - r, r)
 				float d_rt = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - r) * (XY.y - r);
-				
-				// RightBot, Center:( w-r, h-r)
+				// RightBot, Center:(w - r, h - r)
 				float d_rb = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - (height - r)) * (XY.y - (height - r));
 				
 				d_lt *= i.tangent.y;
@@ -120,19 +122,21 @@
 				float left = lerp(
 					lerp(1, 0, IS(d_lt -r * r)),
 					lerp(1, 0, IS(d_lb -r * r)),
-					IS( i.uv.y> 0.5)
+					IS(i.uv.y > 0.5)
 				);
 				float right = lerp(
 					lerp(1, 0, IS(d_rt -r * r)),
 					lerp(1, 0, IS(d_rb -r * r)),
 					IS(i.uv.y > 0.5)
 				);
-				float a = lerp( 
+				orig.a = lerp( 
 					lerp(left, right, IS(i.uv.x > 0.5)),
 					1,
 					IS(isNotCorner) // r < x < 1-r && r < y < 1-r
 				);
-				orig.a = a;
+				
+				orig.a *= UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
+				
 				return orig;
 
 			}
