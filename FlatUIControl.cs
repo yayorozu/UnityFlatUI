@@ -21,7 +21,7 @@ namespace Yorozu.FlatUI
 		}
 
 		[SerializeField]
-		private CurveFlags _flags;
+		private CurveFlags _flags = CurveFlags.LeftTop | CurveFlags.RightTop | CurveFlags.LeftBottom | CurveFlags.RightBottom;
 		
 		[SerializeField, Range(0, 0.5f)]
 		private float _radius;
@@ -50,11 +50,17 @@ namespace Yorozu.FlatUI
 
 			var rect = transform as RectTransform;
 
-			for (int i = 0; i < vertexList.Count; i++)
+			for (var i = 0; i < vertexList.Count; i++)
 			{
 				var vertex = vertexList[i];
 				vertex.uv1 = new Vector2(_radius, 0);
 				vertex.uv2 = new Vector2(rect.rect.width, rect.rect.height);
+				vertex.tangent = new Vector4(
+						(_flags & CurveFlags.LeftTop) == CurveFlags.LeftTop ? 1 : 0,
+						(_flags & CurveFlags.LeftBottom) == CurveFlags.LeftBottom ? 1 : 0,
+						(_flags & CurveFlags.RightTop) == CurveFlags.RightTop ? 1 : 0,
+						(_flags & CurveFlags.RightBottom) == CurveFlags.RightBottom ? 1 : 0
+						);
 				vertexList[i] = vertex;
 			}
 	

@@ -54,6 +54,8 @@
 				float2 texcoord1 : TEXCOORD1;
 				float2 texcoord2 : TEXCOORD2;
 				fixed4 color : COLOR;
+				fixed4 tangent : TANGENT0;
+
 			};
 
 			struct v2f
@@ -63,6 +65,7 @@
 				float2 texcoord2 : TEXCOORD2;
 				float4 vertex : SV_POSITION;
 				fixed4 color : COLOR;
+				fixed4 tangent : TANGENT0;
 			};
 			
 			v2f vert(appdata v)
@@ -73,6 +76,7 @@
 				o.texcoord1 = v.texcoord1;
 				o.texcoord2 = v.texcoord2;
 				o.color = v.color;
+				o.tangent = v.tangent;
 				return o;
 			}
 
@@ -98,47 +102,17 @@
                 
                 // LeftBot, Center:( r, h-r)
                 float d_lb = (XY.x - r) * (XY.x - r) + (XY.y- (height - r)) * (XY.y - (height - r));
-                
+               
                 // RightTop, Center:( w-r, r)
                 float d_rt = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - r) * (XY.y - r);
-                
+               
                 // RightBot, Center:( w-r, h-r)
                 float d_rb = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - (height - r)) * (XY.y - (height - r));
-
-                //
-                // The code which is implemented present the code which is comment outed.
-                // 以下のコードは下記if 文を表現するためlerp などを用いて実装しています
-                //
-                // if( r < u < 1-r || r < v < 1-r)
-                // {
-                //     ret = original;
-                // }
-                // else
-                // {
-                //     if( u < 0.5 )
-                //     {
-                //         if( v > 0.5)
-                //         {
-                //             ret = D_lb > r ? alpha : orig;
-                //         }
-                //         else
-                //         {
-                //             ret = D_lt > r ? alpha : orig;
-                //         }
-                //     }
-                //     else
-                //     {
-                //         if( v > 0.5)
-                //         {
-                //             ret = D_rb > r ? alpha : orig;
-                //         }
-                //         else
-                //         {
-                //             ret = D_rt > r ? alpha : orig;
-                //         }
-                //     }
-                // }
                 
+                d_lt *= i.tangent.y;
+                d_lb *= i.tangent.x;
+                d_rt *= i.tangent.w;
+                d_rb *= i.tangent.z;
 
                 float isNotCorner = 
                     IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
