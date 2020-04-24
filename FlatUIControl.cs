@@ -23,7 +23,7 @@ namespace Yorozu.FlatUI
 		[SerializeField]
 		private CurveFlags _flags;
 		
-		[SerializeField]
+		[SerializeField, Range(0, 0.5f)]
 		private float _radius;
 		
 		[SerializeField, HideInInspector]
@@ -45,21 +45,21 @@ namespace Yorozu.FlatUI
 		
 		public override void ModifyMesh(VertexHelper vh)
 		{
-			var _vertexList = new List<UIVertex>();
-			vh.GetUIVertexStream(_vertexList);
+			var vertexList = new List<UIVertex>();
+			vh.GetUIVertexStream(vertexList);
 
 			var rect = transform as RectTransform;
 
-			for (int i = 0; i < _vertexList.Count; i++)
+			for (int i = 0; i < vertexList.Count; i++)
 			{
-				var vertex = _vertexList[i];
+				var vertex = vertexList[i];
 				vertex.uv1 = new Vector2(_radius, 0);
 				vertex.uv2 = new Vector2(rect.rect.width, rect.rect.height);
-				_vertexList[i] = vertex;
+				vertexList[i] = vertex;
 			}
 	
 			vh.Clear();
-			vh.AddUIVertexTriangleStream(_vertexList);
+			vh.AddUIVertexTriangleStream(vertexList);
 		}
 	}
 }

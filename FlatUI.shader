@@ -2,13 +2,6 @@
 {
 	Properties
 	{
-		[PerRendererData]
-		_MainTex ("Sprite Texture", 2D) = "white" {}
-		
-		_Radius("Radius", Range(0,0.5)) = 0.1   // 角丸の円の半径. Width/height の小さい方に対する割合
-
-		_Color("Tint", Color) = (1,1,1,1)
-
 		_StencilComp("Stencil Comparison", Float) = 8
 		_Stencil("Stencil ID", Float) = 0
 		_StencilOp("Stencil Operation", Float) = 0
@@ -58,32 +51,27 @@
 			{
 				float4 vertex : POSITION;
 				float2 uv : TEXCOORD0;
-				float2 uv1 : TEXCOORD1;
-				float2 uv2 : TEXCOORD2;
+				float2 texcoord1 : TEXCOORD1;
+				float2 texcoord2 : TEXCOORD2;
 				fixed4 color : COLOR;
 			};
 
 			struct v2f
 			{
 				float2 uv : TEXCOORD0;
-				float2 uv1 : TEXCOORD1;
-				float2 uv2 : TEXCOORD2;
+				float2 texcoord1 : TEXCOORD1;
+				float2 texcoord2 : TEXCOORD2;
 				float4 vertex : SV_POSITION;
 				fixed4 color : COLOR;
 			};
-
-			sampler2D _MainTex;
-			float4 _MainTex_ST;
-			float4 _MainTex_TexelSize;
-			float _Radius;
 			
 			v2f vert(appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				o.uv1 = v.uv1;
-				o.uv2 = v.uv2;
+				o.uv = v.uv;
+				o.texcoord1 = v.texcoord1;
+				o.texcoord2 = v.texcoord2;
 				o.color = v.color;
 				return o;
 			}
@@ -96,22 +84,26 @@
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-				half4 orig = i.color;                
-                float r = min(i.uv2.x, i.uv2.y) * i.uv1.x;
-                float2 XY = float2(i.uv.x * i.uv2.x, i.uv.y * i.uv2.y);
+				fixed radius = i.texcoord1.x;
+				fixed width = i.texcoord2.x;
+				fixed height = i.texcoord2.y;
+				
+				half4 orig = i.color;
+                float r = min(width, height) * radius;
+                float2 XY = float2(i.uv.x * width, i.uv.y * height);
 
                 // Calc Distance from each center of circle
                 // LeftTop, Center:( r, r)               
-                float d_lt = (XY.x - r) * (XY.x - r) + (XY.y-r) * (XY.y-r);
+                float d_lt = (XY.x - r) * (XY.x - r) + (XY.y - r) * (XY.y - r);
                 
                 // LeftBot, Center:( r, h-r)
-                float d_lb = (XY.x - r) * (XY.x - r) + (XY.y- (i.uv2.y - r)) * (XY.y - (i.uv2.y - r));
+                float d_lb = (XY.x - r) * (XY.x - r) + (XY.y- (height - r)) * (XY.y - (height - r));
                 
                 // RightTop, Center:( w-r, r)
-                float d_rt = (XY.x - (i.uv2.x - r)) * (XY.x - (i.uv2.x - r)) + (XY.y - r) * (XY.y - r);
+                float d_rt = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - r) * (XY.y - r);
                 
                 // RightBot, Center:( w-r, h-r)
-                float d_rb = (XY.x - (i.uv2.x - r)) * (XY.x - (i.uv2.x - r)) + (XY.y - (i.uv2.y - r)) * (XY.y - (i.uv2.y - r));
+                float d_rb = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - (height - r)) * (XY.y - (height - r));
 
                 //
                 // The code which is implemented present the code which is comment outed.
@@ -149,8 +141,8 @@
                 
 
                 float isNotCorner = 
-                    IS(IS_SMALL( r,XY.x ) + IS_SMALL(XY.x, (i.uv2.x - r)) - 1) // r < x < 1-r
-                    + IS(IS_SMALL( r, XY.y) + IS_SMALL(XY.y, (i.uv2.y - r)) - 1); // r < y < 1-r
+                    IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
+                    + IS(IS_SMALL(r, XY.y) + IS_SMALL(XY.y, (height - r)) - 1); // r < y < 1-r
                 
                 float left = lerp(
                     lerp(1, 0, IS(d_lt -r * r)),
