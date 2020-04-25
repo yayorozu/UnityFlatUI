@@ -96,7 +96,6 @@
 				fixed height = i.texcoord2.y;
 				
 				half4 orig = i.color;
-				half4 outline = half4(0, 0, 0, 1);
 				float r = min(width, height) * radius;
 				float2 XY = float2(i.uv.x * width, i.uv.y * height);
 				
@@ -110,10 +109,14 @@
 				// RightBot, Center:(w - r, h - r)
 				float d_rb = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - (height - r)) * (XY.y - (height - r));
 				
-				d_lt *= i.tangent.y;
-				d_lb *= i.tangent.x;
-				d_rt *= i.tangent.w;
-				d_rb *= i.tangent.z;
+				fixed flag = i.texcoord1.y;
+				d_lt *= saturate(flag % 10);
+				flag /= 10;
+				d_lb *= saturate(flag % 10);
+				flag /= 10;
+				d_rt *= saturate(flag % 10);
+				flag /= 10;
+				d_rb *= saturate(flag);
 				
 				float isNotCorner = 
 					IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
@@ -138,7 +141,6 @@
 				orig.a *= UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
 				
 				return orig;
-
 			}
 			ENDCG
 		}

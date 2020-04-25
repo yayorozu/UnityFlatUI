@@ -50,17 +50,16 @@ namespace Yorozu.FlatUI
 
 			var rect = transform as RectTransform;
 
+			var flag = ((_flags & CurveFlags.LeftTop) == CurveFlags.LeftTop ? 1 : 0) +
+				((_flags & CurveFlags.LeftBottom) == CurveFlags.LeftBottom ? 10 : 0) +
+				((_flags & CurveFlags.RightTop) == CurveFlags.RightTop ? 100 : 0) +
+				((_flags & CurveFlags.RightBottom) == CurveFlags.RightBottom ? 1000 : 0);
+			
 			for (var i = 0; i < vertexList.Count; i++)
 			{
 				var vertex = vertexList[i];
-				vertex.uv1 = new Vector2(_radius, 0);
+				vertex.uv1 = new Vector2(_radius, flag);
 				vertex.uv2 = new Vector2(rect.rect.width, rect.rect.height);
-				vertex.tangent = new Vector4(
-						(_flags & CurveFlags.LeftTop) == CurveFlags.LeftTop ? 1 : 0,
-						(_flags & CurveFlags.LeftBottom) == CurveFlags.LeftBottom ? 1 : 0,
-						(_flags & CurveFlags.RightTop) == CurveFlags.RightTop ? 1 : 0,
-						(_flags & CurveFlags.RightBottom) == CurveFlags.RightBottom ? 1 : 0
-						);
 				vertexList[i] = vertex;
 			}
 	
