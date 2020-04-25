@@ -14,6 +14,7 @@ namespace Yorozu.FlatUI
 			base.Reset();
 			if (m_Material == null)
 				m_Material = Resources.Load<Material>("FlatUI/FlatUI");
+			
 		}
 
 		protected override void OnValidate()
@@ -38,6 +39,8 @@ namespace Yorozu.FlatUI
 		
 		[SerializeField, Range(0, 0.5f)]
 		private float _radius;
+		[SerializeField]
+		private bool _isValidOutline;
 		[SerializeField, Range(0, 0.05f)]
 		private float _outline;
 		[SerializeField]
@@ -56,12 +59,18 @@ namespace Yorozu.FlatUI
 			           ((_flags & CurveFlags.RightTop) == CurveFlags.RightTop ? 100 : 0) +
 			           ((_flags & CurveFlags.RightBottom) == CurveFlags.RightBottom ? 1000 : 0);
 			
+			var color = _outlineColor.r / 10 +
+			            + Mathf.FloorToInt(_outlineColor.g * 100) +
+			            + Mathf.FloorToInt(_outlineColor.b * 100) * 1000;
+
 			for (var i = 0; i < vertexList.Count; i++)
 			{
 				var vertex = vertexList[i];
 				vertex.uv1 = new Vector2( _radius, flag);
 				vertex.uv2 = new Vector2(rect.rect.width, rect.rect.height);
-				vertex.uv3 = new Vector2(_outline, 0f);
+				if (_isValidOutline)
+					vertex.uv3 = new Vector2(_outline, color);
+				
 				vertexList[i] = vertex;
 			}
 	

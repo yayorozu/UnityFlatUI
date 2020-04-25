@@ -142,11 +142,17 @@
 			fixed4 frag(v2f i) : SV_Target
 			{
 				fixed radius = i.texcoord1.x; 
-				fixed outline = i.texcoord3.x;
 				
 				fixed width = i.texcoord2.x;
 				fixed height = i.texcoord2.y;
+				fixed outline = i.texcoord3.x;
 				fixed4 outlineColor = half4(0, 0, 0, 1);
+				
+				fixed outlineColorData = i.texcoord3.y;
+				outlineColor.r = frac(i.texcoord3.y) * 10;
+				outlineColor.g = floor(outlineColorData) % 1000 / 100;
+				outlineColorData = floor(outlineColorData / 1000);
+				outlineColor.b = outlineColorData / 100;
 
 				fixed4 color = Circle(i.uv, half4(0, 0, 0, 0), outlineColor, radius, width, height, i.texcoord1.y);
 				
