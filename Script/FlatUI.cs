@@ -14,12 +14,16 @@ namespace Yorozu.FlatUI
 			base.Reset();
 			if (m_Material == null)
 				m_Material = Resources.Load<Material>("FlatUI/FlatUI");
-			
 		}
 
 		protected override void OnValidate()
 		{
 			base.OnValidate();
+			if (_isValidOutline && m_Material.name != "FlatUIOutline")
+				m_Material = Resources.Load<Material>("FlatUI/FlatUIOutline");
+			else if (!_isValidOutline && m_Material.name != "FlatUI")
+				m_Material = Resources.Load<Material>("FlatUI/FlatUI");
+
 			var graphic = GetComponent<Graphic>();
 			graphic.SetVerticesDirty();
 		}

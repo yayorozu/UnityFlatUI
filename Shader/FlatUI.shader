@@ -2,6 +2,9 @@
 {
 	Properties
 	{
+	    [KeywordEnum(DISABLE, ENABLE)]
+        _OUTLINE("OUTLINE KEYWORD", Float) = 0
+        
 		_StencilComp("Stencil Comparison", Float) = 8
 		_Stencil("Stencil ID", Float) = 0
 		_StencilOp("Stencil Operation", Float) = 0
@@ -43,6 +46,7 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma shader_feature _OUTLINE_DISABLE _OUTLINE_ENABLE
 
 			#include "UnityCG.cginc"
 			#include "UnityUI.cginc"
@@ -53,7 +57,11 @@
 				float2 uv : TEXCOORD0;
 				float2 texcoord1 : TEXCOORD1;
 				float2 texcoord2 : TEXCOORD2;
+				
+				#ifdef _OUTLINE_ENABLE
 				float2 texcoord3 : TEXCOORD3;
+				#endif
+				
 				fixed4 color : COLOR;
 				fixed4 tangent : TANGENT0;
 			};
@@ -63,7 +71,11 @@
 				float2 uv : TEXCOORD0;
 				float2 texcoord1 : TEXCOORD1;
 				float2 texcoord2 : TEXCOORD2;
+				
+				#ifdef _OUTLINE_ENABLE
 				float2 texcoord3 : TEXCOORD3;
+				#endif
+				
 				float4 vertex : SV_POSITION;
 				fixed4 color : COLOR;
 				fixed4 tangent : TANGENT0;
@@ -78,7 +90,11 @@
 				o.uv = v.uv;
 				o.texcoord1 = v.texcoord1;
 				o.texcoord2 = v.texcoord2;
+				
+				#ifdef _OUTLINE_ENABLE
 				o.texcoord3 = v.texcoord3;
+				#endif
+				
 				o.color = v.color;
 				o.tangent = v.tangent;
 				return o;
@@ -145,6 +161,8 @@
 				
 				fixed width = i.texcoord2.x;
 				fixed height = i.texcoord2.y;
+				
+				#ifdef _OUTLINE_ENABLE
 				fixed outline = i.texcoord3.x;
 				fixed4 outlineColor = half4(0, 0, 0, 1);
 				
@@ -168,8 +186,6 @@
 				// Inner outline
 				color = Circle(uv, color, i.color, radius, width - width * outline * 2, height - height * outline * 2, i.texcoord1.y);
 				
-				color.a *= UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
-				
 				color.rgb = lerp(
 					color.rgb, 
 					outlineColor,
@@ -179,9 +195,19 @@
 					)
 				);
 				
+				#else
+				
+				fixed4 color = Circle(i.uv, half4(0, 0, 0, 0), i.color, radius, width, height, i.texcoord1.y);
+				
+				#endif
+				
+				color.a *= UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
+				
 				return color;
 			}
 			ENDCG
 		}
 	}
+	
+	CustomEditor "Yorozu.FlatUI.Tool.FlatUIShaderGUI"
 }
