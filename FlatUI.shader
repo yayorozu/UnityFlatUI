@@ -53,6 +53,7 @@
 				float2 uv : TEXCOORD0;
 				float2 texcoord1 : TEXCOORD1;
 				float2 texcoord2 : TEXCOORD2;
+				float2 texcoord3 : TEXCOORD3;
 				fixed4 color : COLOR;
 				fixed4 tangent : TANGENT0;
 			};
@@ -62,6 +63,7 @@
 				float2 uv : TEXCOORD0;
 				float2 texcoord1 : TEXCOORD1;
 				float2 texcoord2 : TEXCOORD2;
+				float2 texcoord3 : TEXCOORD3;
 				float4 vertex : SV_POSITION;
 				fixed4 color : COLOR;
 				fixed4 tangent : TANGENT0;
@@ -76,6 +78,7 @@
 				o.uv = v.uv;
 				o.texcoord1 = v.texcoord1;
 				o.texcoord2 = v.texcoord2;
+				o.texcoord3 = v.texcoord3;
 				o.color = v.color;
 				o.tangent = v.tangent;
 				return o;
@@ -88,16 +91,12 @@
 			#define IS(value) ceil(saturate(value))
 			// a がb よりも小さいかどうか
 			#define IS_SMALL(a, b) IS( b - a)
-
-			fixed4 frag(v2f i) : SV_Target
+			
+			fixed4 Circle(float2 uv, fixed4 baseColor, fixed4 targetColor, fixed radius, fixed width, fixed height, fixed4 flag)
 			{
-				fixed radius = i.texcoord1.x;
-				fixed width = i.texcoord2.x;
-				fixed height = i.texcoord2.y;
-				
-				half4 orig = i.color;
+				half4 orig = baseColor;
 				float r = min(width, height) * radius;
-				float2 XY = float2(i.uv.x * width, i.uv.y * height);
+				float2 XY = float2(uv.x * width, uv.y * height);
 				
 				// Calc Distance from each center of circle
 				// LeftTop, Center:(r, r)
@@ -109,38 +108,72 @@
 				// RightBot, Center:(w - r, h - r)
 				float d_rb = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - (height - r)) * (XY.y - (height - r));
 				
-				fixed flag = i.texcoord1.y;
-				d_lt *= saturate(flag % 10);
-				flag /= 10;
 				d_lb *= saturate(flag % 10);
-				flag /= 10;
-				d_rt *= saturate(flag % 10);
-				flag /= 10;
-				d_rb *= saturate(flag);
+				flag = floor(flag / 10);
+				d_lt *= saturate(flag % 10);
+				flag = floor(flag / 10);
+				d_rb *= saturate(flag % 10);
+				flag = floor(flag / 10);
+				d_rt *= saturate(flag);
 				
 				float isNotCorner = 
 					IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
 					+ IS(IS_SMALL(r, XY.y) + IS_SMALL(XY.y, (height - r)) - 1); // r < y < 1-r
 				
 				float left = lerp(
-					lerp(1, 0, IS(d_lt -r * r)),
-					lerp(1, 0, IS(d_lb -r * r)),
-					IS(i.uv.y > 0.5)
+					lerp(1, 0, IS(d_lt - r * r)),
+					lerp(1, 0, IS(d_lb - r * r)),
+					IS(uv.y > 0.5)
 				);
 				float right = lerp(
-					lerp(1, 0, IS(d_rt -r * r)),
-					lerp(1, 0, IS(d_rb -r * r)),
-					IS(i.uv.y > 0.5)
+					lerp(1, 0, IS(d_rt - r * r)),
+					lerp(1, 0, IS(d_rb - r * r)),
+					IS(uv.y > 0.5)
 				);
-				orig.a = lerp( 
-					lerp(left, right, IS(i.uv.x > 0.5)),
+				fixed v = lerp( 
+					lerp(left, right, IS(uv.x > 0.5)),
 					1,
 					IS(isNotCorner) // r < x < 1-r && r < y < 1-r
 				);
 				
-				orig.a *= UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
+				return lerp(baseColor, targetColor, v);
+			}
+
+			fixed4 frag(v2f i) : SV_Target
+			{
+				fixed radius = i.texcoord1.x; 
+				fixed outline = i.texcoord3.x;
 				
-				return orig;
+				fixed width = i.texcoord2.x;
+				fixed height = i.texcoord2.y;
+				fixed4 outlineColor = half4(0, 0, 0, 1);
+
+				fixed4 color = Circle(i.uv, half4(0, 0, 0, 0), outlineColor, radius, width, height, i.texcoord1.y);
+				
+				// Outlineの最低幅
+				float r = min(width, height) * outline;
+				
+				fixed2 uv = fixed2(
+					lerp(-r / width, 1 + r / width, i.uv.x), 
+					lerp(-r / height, 1 + r / height, i.uv.y) 
+				);
+				fixed outlineX = (r / width) / (1 + r / width);
+				fixed outlineY = (r / height) / (1 + r / height);
+				// Inner outline
+				color = Circle(uv, color, i.color, radius, width - width * outline * 2, height - height * outline * 2, i.texcoord1.y);
+				
+				color.a *= UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
+				
+				color.rgb = lerp(
+					color.rgb, 
+					outlineColor,
+					saturate(
+						(frac(i.uv.x * (1 + outlineX)) < outlineX) + 
+						(frac(i.uv.y * (1 + outlineY)) < outlineY)
+					)
+				);
+				
+				return color;
 			}
 			ENDCG
 		}
