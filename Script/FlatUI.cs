@@ -8,12 +8,16 @@ namespace Yorozu.FlatUI
 	public class FlatUI : MaskableGraphic
 	{
 #if UNITY_EDITOR
-
+		
+		[NonSerialized]
+		private int parentId;
+		
 		protected override void Reset()
 		{
 			base.Reset();
 			if (m_Material == null)
 				m_Material = Resources.Load<Material>("FlatUI/FlatUI");
+			SetCanvasChannel();
 		}
 
 		protected override void OnValidate()
@@ -26,7 +30,38 @@ namespace Yorozu.FlatUI
 
 			var graphic = GetComponent<Graphic>();
 			graphic.SetVerticesDirty();
+			SetCanvasChannel();
 		}
+		
+		/// <summary>
+		/// Canvasのチャンネルを操作
+		/// </summary>
+		private void SetCanvasChannel()
+		{
+			// 親
+			if (parentId != 0 && transform.parent.GetInstanceID() == parentId)
+				return;
+
+			parentId = transform.parent.GetInstanceID();
+
+			var parent = transform.parent;
+			while (parent != null)
+			{
+				var canvas = parent.GetComponent<Canvas>();
+				if (canvas != null)
+				{
+					canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
+					canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord2;
+					if (_isValidOutline)
+						canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord3;
+
+					break;
+				}
+				parent = parent.parent;
+			}
+
+		}
+		
 #endif
 		
 		[Flags]
