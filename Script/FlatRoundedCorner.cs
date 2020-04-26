@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace Yorozu.FlatUI
 {
-	public class FlatUI : MaskableGraphic
+	public class FlatRoundedCorner : MaskableGraphic
 	{
 #if UNITY_EDITOR
 		
@@ -16,17 +16,17 @@ namespace Yorozu.FlatUI
 		{
 			base.Reset();
 			if (m_Material == null)
-				m_Material = Resources.Load<Material>("FlatUI/FlatUI");
+				m_Material = Resources.Load<Material>("FlatUI/FlatRoundedCorner");
 			SetCanvasChannel();
 		}
 
 		protected override void OnValidate()
 		{
 			base.OnValidate();
-			if (_isValidOutline && m_Material.name != "FlatUIOutline")
-				m_Material = Resources.Load<Material>("FlatUI/FlatUIOutline");
-			else if (!_isValidOutline && m_Material.name != "FlatUI")
-				m_Material = Resources.Load<Material>("FlatUI/FlatUI");
+			if (_isValidOutline && m_Material.name != "FlatRoundedCornerOutline")
+				m_Material = Resources.Load<Material>("FlatUI/FlatRoundedCornerOutline");
+			else if (!_isValidOutline && m_Material.name != "FlatRoundedCorner")
+				m_Material = Resources.Load<Material>("FlatUI/FlatRoundedCorner");
 
 			var graphic = GetComponent<Graphic>();
 			graphic.SetVerticesDirty();

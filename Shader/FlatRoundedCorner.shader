@@ -1,4 +1,4 @@
-﻿Shader "Hidden/FlatUI"
+﻿Shader "Hidden/Flat/RoundedCorner"
 {
 	Properties
 	{
@@ -209,5 +209,5 @@
 		}
 	}
 	
-	CustomEditor "Yorozu.FlatUI.Tool.FlatUIShaderGUI"
+	CustomEditor "Yorozu.FlatUI.Tool.FlatRoundedCornerShaderGUI"
 }

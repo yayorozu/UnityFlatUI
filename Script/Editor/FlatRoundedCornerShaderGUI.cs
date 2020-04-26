@@ -2,7 +2,7 @@
 
 namespace Yorozu.FlatUI.Tool
 {
-	public class FlatUIShaderGUI : ShaderGUI
+	public class FlatRoundedCornerShaderGUI : ShaderGUI
 	{
 		public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
 		{

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: FlatUI
+  m_Name: FlatRoundedCorner
   m_Shader: {fileID: 4800000, guid: 9b449c808ff8240b5ac99aca26407405, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -57,6 +57,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _BumpScale: 1
+    - _COLOR: 0
     - _ColorMask: 15
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -67,6 +68,7 @@ Material:
     - _Height: 100
     - _Metallic: 0
     - _Mode: 0
+    - _OUTLINE: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Radius: 0.322

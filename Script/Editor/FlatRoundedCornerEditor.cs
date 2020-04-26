@@ -2,8 +2,8 @@
 
 namespace Yorozu.FlatUI.Tool
 {
-	[CustomEditor(typeof(FlatUI))]
-	public class FlatUIEditor : Editor
+	[CustomEditor(typeof(FlatRoundedCorner))]
+	public class FlatRoundedCornerEditor : Editor
 	{
 		private SerializedProperty _color;
 		private SerializedProperty _raycast;
