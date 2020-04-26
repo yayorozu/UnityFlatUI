@@ -99,10 +99,13 @@
 				float width = 1 - frac(value1) * 10;
 				float amount = floor(value1) / 100;
 				float reverse = frac(value2) * 10;
+				float maxLength = floor(value2) / 100;
 				if (reverse > 0)
 				{
 					angle = 1 - angle;
 				}
+				
+				amount = lerp(0, amount, maxLength); 
 				
 				float len = length(pos);
 				float edge = 0.03;

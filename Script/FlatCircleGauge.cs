@@ -65,6 +65,8 @@ namespace Yorozu.FlatUI
 		private float _fillAmount;
 		[SerializeField]
 		private bool _isReverse;
+		[SerializeField, Range(0.1f, 1f)]
+		private float _length = 1f;
 		
 		protected override void OnPopulateMesh(VertexHelper vh)
 		{
@@ -76,7 +78,7 @@ namespace Yorozu.FlatUI
 			var angleVector = new Vector2(Mathf.Cos(radian), Mathf.Sin(radian)).normalized;
 
 			var value1 = _width / 10f + Mathf.FloorToInt(_fillAmount * 100);
-			var value2 = _isReverse ? 0.1f : 0f; 
+			var value2 = (_isReverse ? 0.1f : 0f) + Mathf.FloorToInt(_length * 100); 
 			
 			for (var i = 0; i < vertexList.Count; i++)
 			{

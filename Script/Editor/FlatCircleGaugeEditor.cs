@@ -11,6 +11,7 @@ namespace Yorozu.FlatUI.Tool
 		private SerializedProperty _startAngle;
 		private SerializedProperty _fillAmount;
 		private SerializedProperty _isReverse;
+		private SerializedProperty _length;
 		
 		private void OnEnable()
 		{
@@ -20,6 +21,7 @@ namespace Yorozu.FlatUI.Tool
 			_startAngle = serializedObject.FindProperty("_startAngle");
 			_fillAmount = serializedObject.FindProperty("_fillAmount");
 			_isReverse = serializedObject.FindProperty("_isReverse");
+			_length = serializedObject.FindProperty("_length");
 		}
 
 		public override void OnInspectorGUI()
@@ -31,6 +33,7 @@ namespace Yorozu.FlatUI.Tool
 			EditorGUILayout.PropertyField(_startAngle);
 			EditorGUILayout.PropertyField(_fillAmount);
 			EditorGUILayout.PropertyField(_isReverse);
+			EditorGUILayout.PropertyField(_length);
 
 			serializedObject.ApplyModifiedProperties();
 		}
