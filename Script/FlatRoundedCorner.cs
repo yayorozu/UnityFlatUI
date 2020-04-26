@@ -59,7 +59,6 @@ namespace Yorozu.FlatUI
 				}
 				parent = parent.parent;
 			}
-
 		}
 		
 #endif

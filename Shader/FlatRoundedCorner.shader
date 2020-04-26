@@ -1,10 +1,9 @@
-﻿Shader "Hidden/Flat/RoundedCorner"
+﻿Shader "Flat/RoundedCorner"
 {
 	Properties
 	{
-	    [KeywordEnum(DISABLE, ENABLE)]
-        _OUTLINE("OUTLINE KEYWORD", Float) = 0
-        
+		[KeywordEnum(DISABLE, ENABLE)]
+		_OUTLINE("OUTLINE KEYWORD", Float) = 0
 		_StencilComp("Stencil Comparison", Float) = 8
 		_Stencil("Stencil ID", Float) = 0
 		_StencilOp("Stencil Operation", Float) = 0
@@ -63,7 +62,6 @@
 				#endif
 				
 				fixed4 color : COLOR;
-				fixed4 tangent : TANGENT0;
 			};
 
 			struct v2f
@@ -78,7 +76,6 @@
 				
 				float4 vertex : SV_POSITION;
 				fixed4 color : COLOR;
-				fixed4 tangent : TANGENT0;
 				float4 worldPosition : TEXCOORD4;
 			};
 			
@@ -96,7 +93,6 @@
 				#endif
 				
 				o.color = v.color;
-				o.tangent = v.tangent;
 				return o;
 			}
 			
@@ -209,5 +205,5 @@
 		}
 	}
 	
-	CustomEditor "Yorozu.FlatUI.Tool.FlatRoundedCornerShaderGUI"
+	CustomEditor "Yorozu.FlatUI.Tool.FlatShaderGUI"
 }
