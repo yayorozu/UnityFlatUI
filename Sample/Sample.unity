@@ -476,6 +476,7 @@ RectTransform:
   m_Children:
   - {fileID: 2076644739}
   - {fileID: 452602977}
+  - {fileID: 2139171831}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -630,7 +631,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _flags: 20
-  _radius: 0.266
+  _radius: 0.247
   _isValidOutline: 0
   _outline: 0
   _outlineColor: {r: 0, g: 0, b: 0.19, a: 0}
@@ -641,4 +642,72 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2076644738}
+  m_CullTransparentMesh: 0
+--- !u!1 &2139171830
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2139171831}
+  - component: {fileID: 2139171833}
+  - component: {fileID: 2139171832}
+  m_Layer: 5
+  m_Name: CircleGauge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2139171831
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2139171830}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 774219181}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -89.2, y: -3.5}
+  m_SizeDelta: {x: 92.5, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2139171832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2139171830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dac13a5a53a842869dc83b4793f10cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 2100000, guid: aaf083465e54d4038a644bb406745858, type: 2}
+  m_Color: {r: 0.3254902, g: 0.17254902, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  _width: 0.482
+  _startAngle: 225
+  _fillAmount: 1
+  _isReverse: 1
+  _length: 1
+--- !u!222 &2139171833
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2139171830}
   m_CullTransparentMesh: 0
