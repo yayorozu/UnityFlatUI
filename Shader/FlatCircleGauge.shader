@@ -93,16 +93,25 @@
 				if (angle < 0) {
 					angle += 1.0;
 				}
-	
+				
+				float value1 = i.texcoord1.x;
+				float value2 = i.texcoord1.y;
+				float width = 1 - frac(value1) * 10;
+				float amount = floor(value1) / 100;
+				float reverse = frac(value2) * 10;
+				if (reverse > 0)
+				{
+					angle = 1 - angle;
+				}
+				
 				float len = length(pos);
 				float edge = 0.03;
-				float width = 1 - i.texcoord1.x;
 				float inner = smoothstep(width, width + edge, len);
-				float outer = smoothstep(1.0 - edge, 1.00, len);
+				float outer = smoothstep(1.0 - edge, 1.0, len);
 				float opaque = inner - outer;
 				
 				fixed4 c = i.color;
-				fixed cutoff = angle > i.texcoord1.y ? 0 : 1;
+				fixed cutoff = angle > amount ? 0 : 1;
 				c.a = i.color.a * opaque * cutoff * UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
 				
 				return c;

@@ -57,12 +57,14 @@ namespace Yorozu.FlatUI
 		
 #endif
 
-		[SerializeField, Range(0.1f, 1f)]
+		[SerializeField, Range(0.1f, 0.9f)]
 		private float _width;
-		[SerializeField, Range(0f, 360f)]
+		[SerializeField, Range(0f, 359f)]
 		private float _startAngle = 90;
 		[SerializeField, Range(0f, 1f)]
 		private float _fillAmount;
+		[SerializeField]
+		private bool _isReverse;
 		
 		protected override void OnPopulateMesh(VertexHelper vh)
 		{
@@ -72,11 +74,14 @@ namespace Yorozu.FlatUI
 			
 			var radian = _startAngle * (Mathf.PI / 180);
 			var angleVector = new Vector2(Mathf.Cos(radian), Mathf.Sin(radian)).normalized;
+
+			var value1 = _width / 10f + Mathf.FloorToInt(_fillAmount * 100);
+			var value2 = _isReverse ? 0.1f : 0f; 
 			
 			for (var i = 0; i < vertexList.Count; i++)
 			{
 				var vertex = vertexList[i];
-				vertex.uv1 = new Vector2( _width, _fillAmount);
+				vertex.uv1 = new Vector2( value1, value2);
 				vertex.uv2 = angleVector;
 				vertexList[i] = vertex;
 			}
