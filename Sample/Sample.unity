@@ -262,9 +262,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _flags: -1
-  _radius: 0.391
+  _radius: 0.5
   _isValidOutline: 1
-  _outline: 0.05
+  _outline: 0.0379
   _outlineColor: {r: 0.36, g: 0.73, b: 0.56, a: 0}
 --- !u!222 &452602979
 CanvasRenderer:

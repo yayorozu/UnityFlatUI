@@ -10,8 +10,10 @@ namespace Yorozu.FlatUI
 #if UNITY_EDITOR
 		
 		[NonSerialized]
-		private int parentId;
-		
+		private int _parentId;
+		[NonSerialized]
+		private Canvas _cacheCanvas;
+
 		protected override void Reset()
 		{
 			base.Reset();
@@ -39,28 +41,34 @@ namespace Yorozu.FlatUI
 		private void SetCanvasChannel()
 		{
 			// 親
-			if (parentId != 0 && transform.parent.GetInstanceID() == parentId)
-				return;
-
-			parentId = transform.parent.GetInstanceID();
-
-			var parent = transform.parent;
-			while (parent != null)
+			if (_parentId == 0 || transform.parent.GetInstanceID() != _parentId)
 			{
-				var canvas = parent.GetComponent<Canvas>();
-				if (canvas != null)
+				_parentId = transform.parent.GetInstanceID();
+				if (_cacheCanvas == null)
 				{
-					canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
-					canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord2;
-					if (_isValidOutline)
-						canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord3;
-
-					break;
+					var parent = transform.parent;
+					while (parent != null)
+					{
+						var canvas = parent.GetComponent<Canvas>();
+						if (canvas != null)
+						{
+							_cacheCanvas = canvas;
+							break;
+						}
+						parent = parent.parent;
+					}
 				}
-				parent = parent.parent;
 			}
+			
+			if (_cacheCanvas == null)
+				return;
+			
+			canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
+			canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord2;
+			if (_isValidOutline)
+				canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord3;
 		}
-		
+
 #endif
 		
 		[Flags]
