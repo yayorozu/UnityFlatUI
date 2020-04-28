@@ -108,7 +108,7 @@
 				amount = lerp(0, amount, maxLength); 
 				
 				float len = length(pos);
-				float edge = 0.03;
+				float edge = 0;
 				float inner = smoothstep(width, width + edge, len);
 				float outer = smoothstep(1.0 - edge, 1.0, len);
 				float opaque = inner - outer;

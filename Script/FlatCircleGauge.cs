@@ -66,7 +66,7 @@ namespace Yorozu.FlatUI
 		
 #endif
 
-		[SerializeField, Range(0.1f, 0.9f)]
+		[SerializeField, Range(0.1f, 1f)]
 		private float _width = 0.1f;
 		[SerializeField, Range(0f, 359f)]
 		private float _startAngle = 90;
