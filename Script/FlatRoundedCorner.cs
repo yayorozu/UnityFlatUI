@@ -63,10 +63,10 @@ namespace Yorozu.FlatUI
 			if (_cacheCanvas == null)
 				return;
 			
-			canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
-			canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord2;
+			_cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
+			_cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord2;
 			if (_isValidOutline)
-				canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord3;
+				_cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord3;
 		}
 
 #endif
