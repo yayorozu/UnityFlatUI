@@ -7,6 +7,12 @@ namespace Yorozu.FlatUI
 {
 	public class FlatRoundedCorner : MaskableGraphic
 	{
+		public enum Type
+		{
+			None,
+			OutLine,
+			Separate,
+		}
 #if UNITY_EDITOR
 		
 		[NonSerialized]
@@ -25,10 +31,12 @@ namespace Yorozu.FlatUI
 		protected override void OnValidate()
 		{
 			base.OnValidate();
-			if (_isValidOutline && m_Material.name != "FlatRoundedCornerOutline")
+			if (_type == Type.OutLine && m_Material.name != "FlatRoundedCornerOutline")
 				m_Material = Resources.Load<Material>("FlatUI/FlatRoundedCornerOutline");
-			else if (!_isValidOutline && m_Material.name != "FlatRoundedCorner")
+			else if (_type == Type.None && m_Material.name != "FlatRoundedCorner")
 				m_Material = Resources.Load<Material>("FlatUI/FlatRoundedCorner");
+			else if (_type == Type.Separate && m_Material.name != "FlatRoundedCornerSeparate")
+				m_Material = Resources.Load<Material>("FlatUI/FlatRoundedCornerSeparate");
 
 			var graphic = GetComponent<Graphic>();
 			graphic.SetVerticesDirty();
@@ -65,7 +73,7 @@ namespace Yorozu.FlatUI
 			
 			_cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
 			_cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord2;
-			if (_isValidOutline)
+			if (_type != Type.None)
 				_cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord3;
 		}
 
@@ -86,11 +94,13 @@ namespace Yorozu.FlatUI
 		[SerializeField, Range(0, 0.5f)]
 		private float _radius;
 		[SerializeField]
-		private bool _isValidOutline;
+		private Type _type;
 		[SerializeField, Range(0, 0.05f)]
 		private float _outline;
+		[SerializeField, Range(0, 1f)]
+        private float _separate = 0.8f;
 		[SerializeField]
-		private Color _outlineColor;
+		private Color _color;
 		
 		protected override void OnPopulateMesh(VertexHelper vh)
 		{
@@ -105,17 +115,19 @@ namespace Yorozu.FlatUI
 			           ((_flags & CurveFlags.RightTop) == CurveFlags.RightTop ? 100 : 0) +
 			           ((_flags & CurveFlags.RightBottom) == CurveFlags.RightBottom ? 1000 : 0);
 			
-			var color = _outlineColor.r / 10 +
-			            + Mathf.FloorToInt(_outlineColor.g * 100) +
-			            + Mathf.FloorToInt(_outlineColor.b * 100) * 1000;
+			var color = _color.r / 10 +
+			            + Mathf.FloorToInt(_color.g * 100) +
+			            + Mathf.FloorToInt(_color.b * 100) * 1000;
 
 			for (var i = 0; i < vertexList.Count; i++)
 			{
 				var vertex = vertexList[i];
 				vertex.uv1 = new Vector2( _radius, flag);
 				vertex.uv2 = new Vector2(rect.rect.width, rect.rect.height);
-				if (_isValidOutline)
+				if (_type == Type.OutLine)
 					vertex.uv3 = new Vector2(_outline, color);
+				if (_type == Type.Separate)
+					vertex.uv3 = new Vector2(_separate, color);
 				
 				vertexList[i] = vertex;
 			}

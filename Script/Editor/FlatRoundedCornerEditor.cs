@@ -5,37 +5,44 @@ namespace Yorozu.FlatUI.Tool
 	[CustomEditor(typeof(FlatRoundedCorner))]
 	public class FlatRoundedCornerEditor : Editor
 	{
-		private SerializedProperty _color;
+		private SerializedProperty _mcolor;
 		private SerializedProperty _raycast;
 		private SerializedProperty _flags;
 		private SerializedProperty _radius;
-		private SerializedProperty _isValidOutline;
+		private SerializedProperty _type;
 		private SerializedProperty _outline;
-		private SerializedProperty _outlineColor;
+		private SerializedProperty _separate;
+		private SerializedProperty _color;
 		
 		private void OnEnable()
 		{
-			_color = serializedObject.FindProperty("m_Color");
+			_mcolor = serializedObject.FindProperty("m_Color");
 			_raycast = serializedObject.FindProperty("m_RaycastTarget");
 			_flags = serializedObject.FindProperty("_flags");
 			_radius = serializedObject.FindProperty("_radius");
-			_isValidOutline = serializedObject.FindProperty("_isValidOutline");
+			_type = serializedObject.FindProperty("_type");
 			_outline = serializedObject.FindProperty("_outline");
-			_outlineColor = serializedObject.FindProperty("_outlineColor");
+			_separate = serializedObject.FindProperty("_separate");
+			_color = serializedObject.FindProperty("_color");
 		}
 
 		public override void OnInspectorGUI()
 		{
 			serializedObject.Update();
-			EditorGUILayout.PropertyField(_color);
+			EditorGUILayout.PropertyField(_mcolor);
 			EditorGUILayout.PropertyField(_raycast);
 			EditorGUILayout.PropertyField(_flags);
 			EditorGUILayout.PropertyField(_radius);
-			EditorGUILayout.PropertyField(_isValidOutline);
-			if (_isValidOutline.boolValue)
+			EditorGUILayout.PropertyField(_type);
+			if (_type.intValue == (int) FlatRoundedCorner.Type.OutLine)
 			{
 				EditorGUILayout.PropertyField(_outline);
-				EditorGUILayout.PropertyField(_outlineColor);
+				EditorGUILayout.PropertyField(_color);
+			}
+			if (_type.intValue == (int) FlatRoundedCorner.Type.Separate)
+			{
+				EditorGUILayout.PropertyField(_separate);
+				EditorGUILayout.PropertyField(_color);
 			}
 
 			serializedObject.ApplyModifiedProperties();
