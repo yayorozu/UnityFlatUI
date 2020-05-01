@@ -51,6 +51,8 @@ namespace Yorozu.FlatUI
 			// 親
 			if (_parentId == 0 || transform.parent.GetInstanceID() != _parentId)
 			{
+				if (transform.parent == null)
+					return;
 				_parentId = transform.parent.GetInstanceID();
 				if (_cacheCanvas == null)
 				{

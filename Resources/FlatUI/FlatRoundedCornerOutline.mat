@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: FlatRoundedCornerOutline
   m_Shader: {fileID: 4800000, guid: 9b449c808ff8240b5ac99aca26407405, type: 3}
-  m_ShaderKeywords: _OUTLINE_ENABLE
+  m_ShaderKeywords: _OUTLINE_ENABLE _TYPE_OUTLINE
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -80,6 +80,7 @@ Material:
     - _StencilOp: 0
     - _StencilReadMask: 255
     - _StencilWriteMask: 255
+    - _TYPE: 1
     - _UVSec: 0
     - _UseUIAlphaClip: 0
     - _Width: 50
