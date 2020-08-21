@@ -170,9 +170,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fe42a33997894330b1b2e0930b69434, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 0a1e1793aa7f748a49a88571a193f253, type: 2}
-  m_Color: {r: 0, g: 0, b: 1, a: 1}
+  m_Material: {fileID: 2100000, guid: 895cd454acbc64ecc93c4dcf1412ad9c, type: 2}
+  m_Color: {r: 0, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -318,17 +319,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7190490bd865403287af0a465a47567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 7eb6a23dcc2a14f8e9d42cc684c56079, type: 2}
+  m_Material: {fileID: 2100000, guid: 9ce3925e8e6a34a39a89d9f439ca98fe, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
   _flags: -1
   _radius: 0.5
-  _isValidOutline: 1
+  _type: 0
   _outline: 0.0379
-  _outlineColor: {r: 0.36, g: 0.73, b: 0.56, a: 0}
+  _separate: 0.8
+  _color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!222 &452602979
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -614,6 +617,7 @@ MonoBehaviour:
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -691,14 +695,16 @@ MonoBehaviour:
   m_Material: {fileID: 2100000, guid: 9ce3925e8e6a34a39a89d9f439ca98fe, type: 2}
   m_Color: {r: 1, g: 0.5019608, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
   _flags: 20
   _radius: 0.247
-  _isValidOutline: 0
+  _type: 0
   _outline: 0
-  _outlineColor: {r: 0, g: 0, b: 0.19, a: 0}
+  _separate: 0.8
+  _color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!222 &2076644741
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -759,6 +765,7 @@ MonoBehaviour:
   m_Material: {fileID: 2100000, guid: aaf083465e54d4038a644bb406745858, type: 2}
   m_Color: {r: 0.3254902, g: 0.17254902, b: 1, a: 1}
   m_RaycastTarget: 1
+  m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
