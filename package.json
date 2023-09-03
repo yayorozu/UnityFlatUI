@@ -1,0 +1,22 @@
+{
+  "name": "yorozu.flat-ui",
+  "version": "1.0.0",
+  "displayName": "Yorozu Flat UI",
+  "description": "Meshの形状を変化させずにShaderで形状を変更するUIライブラリ",
+  "unity": "2020.3",
+  "keywords": [
+    "Yorozu"
+  ],
+  "author": {
+    "name": "Yorozu",
+    "email": "hatch.tech.eng@gmail.com",
+    "url": "https://github.com/yayorozu"
+  },
+  "samples": [
+    {
+      "displayName": "UI Sample",
+      "description": "",
+      "path": "Samples~/UISample"
+    }
+  ]
+}
