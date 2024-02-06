@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 namespace Yorozu.FlatUI
 {
+	[RequireComponent(typeof(CanvasRenderer))]
 	public class FlatCircleGauge : MaskableGraphic
 	{
 
