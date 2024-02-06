@@ -3,27 +3,24 @@ using UnityEngine.UI;
 
 namespace Yorozu.FlatUI
 {
-	[RequireComponent(typeof(CanvasRenderer))]
-	public class FlatCircle : MaskableGraphic
-	{
-		
+    [RequireComponent(typeof(CanvasRenderer))]
+    public class FlatCircle : MaskableGraphic
+    {
 #if UNITY_EDITOR
-		
-		protected override void Reset()
-		{
-			base.Reset();
-			if (m_Material == null)
-				m_Material = Resources.Load<Material>("FlatUI/FlatCircle");
-		}
+        protected override void Reset()
+        {
+            base.Reset();
+            if (m_Material == null)
+                m_Material = Resources.Load<Material>("FlatUI/FlatCircle");
+        }
 
-		protected override void OnValidate()
-		{
-			base.OnValidate();
-			var graphic = GetComponent<Graphic>();
-			graphic.SetVerticesDirty();
-		}
-		
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+            var graphic = GetComponent<Graphic>();
+            graphic.SetVerticesDirty();
+        }
+
 #endif
-		
-	}
+    }
 }
