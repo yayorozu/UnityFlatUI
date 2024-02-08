@@ -102,9 +102,6 @@ namespace Yorozu.FlatUI
                 return;
 
             _cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
-            _cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord2;
-            if (_type != Type.None)
-                _cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord3;
         }
 
 #endif
@@ -143,23 +140,25 @@ namespace Yorozu.FlatUI
             var vertexList = new List<UIVertex>();
             vh.GetUIVertexStream(vertexList);
 
-            var rect = transform as RectTransform;
+            var rect = (transform as RectTransform).rect;
 
             var color = _color.r / 10 +
                         Mathf.FloorToInt(_color.g * 100) +
                         Mathf.FloorToInt(_color.b * 100) * 1000;
 
             var flagsClamp = (int)_flags / 15f;
-            var uv1Param = new Vector4(_radius, flagsClamp, rect.rect.width, rect.rect.height);
+            var uv1Param = new Vector4(_radius, flagsClamp, color);
+            if (_type == Type.OutLine)
+                uv1Param.w = _outline;
+            if (_type == Type.Separate)
+                uv1Param.w = _separate;
+                
             for (var i = 0; i < vertexList.Count; i++)
             {
                 var vertex = vertexList[i];
+                vertex.uv0.z = rect.width;
+                vertex.uv0.w = rect.height;
                 vertex.uv1 = uv1Param;
-                if (_type == Type.OutLine)
-                    vertex.uv2 = new Vector2(_outline, color);
-                if (_type == Type.Separate)
-                    vertex.uv2 = new Vector2(_separate, color);
-
                 vertexList[i] = vertex;
             }
 

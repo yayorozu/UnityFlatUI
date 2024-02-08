@@ -53,28 +53,18 @@
 			struct appdata
 			{
 				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
+				float4 uv : TEXCOORD0;
 				float4 texcoord1 : TEXCOORD1;
-				
-				#if defined(_TYPE_OUTLINE) || defined(_TYPE_SEPARATE)
-				float2 texcoord2 : TEXCOORD2;
-				#endif
-				
 				fixed4 color : COLOR;
 			};
 
 			struct v2f
 			{
-				float2 uv : TEXCOORD0;
-				float4 texcoord1 : TEXCOORD1;
-				
-				#if defined(_TYPE_OUTLINE) || defined(_TYPE_SEPARATE) 
-				float2 texcoord2 : TEXCOORD2;
-				#endif
-				
+				float4 uv : TEXCOORD0;
 				float4 vertex : SV_POSITION;
 				fixed4 color : COLOR;
-				float4 worldPosition : TEXCOORD3;
+				float4 texcoord1 : TEXCOORD1;
+				float4 worldPosition : TEXCOORD2;
 			};
 			
 			v2f vert(appdata v)
@@ -84,11 +74,6 @@
 				o.worldPosition = v.vertex;
 				o.uv = v.uv;
 				o.texcoord1 = v.texcoord1;
-				
-				#if defined(_TYPE_OUTLINE) || defined(_TYPE_SEPARATE)
-				o.texcoord2 = v.texcoord2;
-				#endif
-				
 				o.color = v.color;
 				return o;
 			}
@@ -146,18 +131,18 @@
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-				fixed radius = i.texcoord1.x; 
+				fixed radius = i.texcoord1.x;
 				int flag = (int)(i.texcoord1.y * 15);
 				
-				fixed width = i.texcoord1.z;
-				fixed height = i.texcoord1.w;
+				fixed width = i.uv.z;
+				fixed height = i.uv.w;
 				
 				#ifdef _TYPE_OUTLINE
-				fixed outline = i.texcoord2.x;
+				fixed outline = i.texcoord1.w;
 				fixed4 outlineColor = half4(0, 0, 0, 1);
 				
-				fixed outlineColorData = i.texcoord2.y;
-				outlineColor.r = frac(i.texcoord2.y) * 10;
+				fixed outlineColorData = i.texcoord1.z;
+				outlineColor.r = frac(i.texcoord1.z) * 10;
 				outlineColor.g = floor(outlineColorData) % 1000 / 100;
 				outlineColorData = floor(outlineColorData / 1000);
 				outlineColor.b = outlineColorData / 100;
@@ -189,11 +174,11 @@
 				
 				fixed4 color = Circle(i.uv, half4(0, 0, 0, 0), i.color, radius, width, height, flag);
 				
-				fixed ratio = i.texcoord2.x;
+				fixed ratio = i.texcoord1.w;
 				
-				fixed colorData = i.texcoord2.y;
+				fixed colorData = i.texcoord1.z;
 				fixed4 separateColor = half4(0, 0, 0, 1);
-				separateColor.r = frac(i.texcoord2.y) * 10;
+				separateColor.r = frac(i.texcoord1.z) * 10;
 				separateColor.g = floor(colorData) % 1000 / 100;
 				colorData = floor(colorData / 1000);
 				separateColor.b = colorData / 100;
