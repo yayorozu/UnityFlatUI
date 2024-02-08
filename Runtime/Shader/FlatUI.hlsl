@@ -48,6 +48,18 @@ half4 Circle(float2 uv, half4 baseColor, half4 targetColor, half radius, half wi
     return lerp(baseColor, targetColor, v);
 }
 
+half4 FloatToColor(float value)
+{
+    half3 outlineColor = half3(0, 0, 0);
+    half outlineColorData = value;
+    outlineColor.r = frac(value) * 10;
+    outlineColor.g = floor(outlineColorData) % 1000 / 100;
+    outlineColorData = floor(outlineColorData / 1000);
+    outlineColor.b = outlineColorData / 100;
+
+    return half4(outlineColor, 1);
+}
+
 half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 {
     half radius = uv1.x;
@@ -58,14 +70,8 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 				
     #ifdef _TYPE_OUTLINE
     half outline = uv1.w;
-    half4 outlineColor = half4(0, 0, 0, 1);
-				
-    half outlineColorData = uv1.z;
-    outlineColor.r = frac(uv1.z) * 10;
-    outlineColor.g = floor(outlineColorData) % 1000 / 100;
-    outlineColorData = floor(outlineColorData / 1000);
-    outlineColor.b = outlineColorData / 100;
-
+    half4 outlineColor = FloatToColor(uv1.z);
+    
     half4 color = Circle(uv.xy, half4(0, 0, 0, 0), outlineColor, radius, width, height, flag);
 
     // Outlineの最低幅
@@ -97,12 +103,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 
     half ratio = uv1.w;
 
-    half colorData = uv1.z;
-    half4 separateColor = half4(0, 0, 0, 1);
-    separateColor.r = frac(uv1.z) * 10;
-    separateColor.g = floor(colorData) % 1000 / 100;
-    colorData = floor(colorData / 1000);
-    separateColor.b = colorData / 100;
+    half4 separateColor = FloatToColor(uv1.z);
 
     color.rgb = lerp(
         separateColor,
@@ -114,7 +115,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 
     #else
 
-    return  Circle(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
+    return Circle(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
 
     #endif
 }

@@ -83,7 +83,7 @@
 			
 			half4 frag(v2f i) : SV_Target
 			{
-				half4 color = CalcColor(i.color, i.uv, i.texcoord1);
+				half4 color = RoundedCornerFragment(i.color, i.uv, i.texcoord1);
 				color.a *= UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
 				
 				return color;
