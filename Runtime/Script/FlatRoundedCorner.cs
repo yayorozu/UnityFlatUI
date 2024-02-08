@@ -150,15 +150,15 @@ namespace Yorozu.FlatUI
                         Mathf.FloorToInt(_color.b * 100) * 1000;
 
             var flagsClamp = (int)_flags / 15f;
+            var uv1Param = new Vector4(_radius, flagsClamp, rect.rect.width, rect.rect.height);
             for (var i = 0; i < vertexList.Count; i++)
             {
                 var vertex = vertexList[i];
-                vertex.uv1 = new Vector2(_radius, flagsClamp);
-                vertex.uv2 = new Vector2(rect.rect.width, rect.rect.height);
+                vertex.uv1 = uv1Param;
                 if (_type == Type.OutLine)
-                    vertex.uv3 = new Vector2(_outline, color);
+                    vertex.uv2 = new Vector2(_outline, color);
                 if (_type == Type.Separate)
-                    vertex.uv3 = new Vector2(_separate, color);
+                    vertex.uv2 = new Vector2(_separate, color);
 
                 vertexList[i] = vertex;
             }
