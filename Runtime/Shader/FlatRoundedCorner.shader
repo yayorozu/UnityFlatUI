@@ -104,9 +104,8 @@
 			// a がb よりも小さいかどうか
 			#define IS_SMALL(a, b) IS( b - a)
 			
-			fixed4 Circle(float2 uv, fixed4 baseColor, fixed4 targetColor, fixed radius, fixed width, fixed height, fixed4 flag)
+			fixed4 Circle(float2 uv, fixed4 baseColor, fixed4 targetColor, fixed radius, fixed width, fixed height, int flag)
 			{
-				half4 orig = baseColor;
 				float r = min(width, height) * radius;
 				float2 XY = float2(uv.x * width, uv.y * height);
 				
@@ -120,13 +119,10 @@
 				// RightBot, Center:(w - r, h - r)
 				float d_rb = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - (height - r)) * (XY.y - (height - r));
 				
-				d_lb *= saturate(flag % 10);
-				flag = floor(flag / 10);
-				d_lt *= saturate(flag % 10);
-				flag = floor(flag / 10);
-				d_rb *= saturate(flag % 10);
-				flag = floor(flag / 10);
-				d_rt *= saturate(flag);
+				d_lt *= (flag & 1 << 2) == 1 << 2;
+				d_rt *= (flag & 1 << 3) == 1 << 3;
+				d_lb *= (flag & 1 << 0) == 1 << 0;
+				d_rb *= (flag & 1 << 1) == 1 << 1;
 				
 				float isNotCorner = 
 					IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
@@ -154,6 +150,7 @@
 			fixed4 frag(v2f i) : SV_Target
 			{
 				fixed radius = i.texcoord1.x; 
+				int flag = (int)(i.texcoord1.y * 15);
 				
 				fixed width = i.texcoord2.x;
 				fixed height = i.texcoord2.y;
@@ -168,7 +165,7 @@
 				outlineColorData = floor(outlineColorData / 1000);
 				outlineColor.b = outlineColorData / 100;
 
-				fixed4 color = Circle(i.uv, half4(0, 0, 0, 0), outlineColor, radius, width, height, i.texcoord1.y);
+				fixed4 color = Circle(i.uv, half4(0, 0, 0, 0), outlineColor, radius, width, height, flag);
 				
 				// Outlineの最低幅
 				float r = min(width, height) * outline;
@@ -180,7 +177,7 @@
 				fixed outlineX = (r / width) / (1 + r / width);
 				fixed outlineY = (r / height) / (1 + r / height);
 				// Inner outline
-				color = Circle(uv, color, i.color, radius, width - width * outline * 2, height - height * outline * 2, i.texcoord1.y);
+				color = Circle(uv, color, i.color, radius, width - width * outline * 2, height - height * outline * 2, flag);
 				
 				color.rgb = lerp(
 					color.rgb, 
@@ -193,7 +190,7 @@
 				
 				#elif _TYPE_SEPARATE
 				
-				fixed4 color = Circle(i.uv, half4(0, 0, 0, 0), i.color, radius, width, height, i.texcoord1.y);
+				fixed4 color = Circle(i.uv, half4(0, 0, 0, 0), i.color, radius, width, height, flag);
 				
 				fixed ratio = i.texcoord3.x;
 				
@@ -212,7 +209,7 @@
 				
 				#else
 				
-				fixed4 color = Circle(i.uv, half4(0, 0, 0, 0), i.color, radius, width, height, i.texcoord1.y);
+				fixed4 color = Circle(i.uv, half4(0, 0, 0, 0), i.color, radius, width, height, flag);
 				
 				#endif
 				

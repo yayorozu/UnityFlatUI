@@ -24,23 +24,45 @@ namespace Yorozu.FlatUI
         protected override void Reset()
         {
             base.Reset();
-            if (m_Material == null)
-                m_Material = Resources.Load<Material>("FlatUI/FlatRoundedCorner");
+            ReplaceMaterialIfNeeded(TargetMaterialName);
             SetCanvasChannel();
         }
+
+        private Material FindMaterial(string name)
+        {
+            var guids = UnityEditor.AssetDatabase.FindAssets($"t:Material {name}", new[] {"Packages"});
+            for (int i = 0; i < guids.Length; i++)
+            {
+                var path = guids[i];
+                var assetPath = UnityEditor.AssetDatabase.GUIDToAssetPath(path);
+                var material = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(assetPath);
+                if (material.name != name)
+                    continue;
+                
+                return material;
+            }
+            
+            return null;
+        }
+
+        private void ReplaceMaterialIfNeeded(string name)
+        {
+            if (m_Material == null || m_Material.name != name)
+                m_Material = FindMaterial(name);
+        }
+        
+        private string TargetMaterialName => _type switch
+        {
+            Type.OutLine => "FlatRoundedCornerOutline",
+            Type.None => "FlatRoundedCorner",
+            Type.Separate => "FlatRoundedCornerSeparate",
+            _ => throw new ArgumentOutOfRangeException()
+        };
 
         protected override void OnValidate()
         {
             base.OnValidate();
-            if (_type == Type.OutLine &&
-                m_Material.name != "FlatRoundedCornerOutline")
-                m_Material = Resources.Load<Material>("FlatUI/FlatRoundedCornerOutline");
-            else if (_type == Type.None &&
-                     m_Material.name != "FlatRoundedCorner")
-                m_Material = Resources.Load<Material>("FlatUI/FlatRoundedCorner");
-            else if (_type == Type.Separate &&
-                     m_Material.name != "FlatRoundedCornerSeparate")
-                m_Material = Resources.Load<Material>("FlatUI/FlatRoundedCornerSeparate");
+            ReplaceMaterialIfNeeded(TargetMaterialName);
 
             var graphic = GetComponent<Graphic>();
             graphic.SetVerticesDirty();
@@ -90,10 +112,10 @@ namespace Yorozu.FlatUI
         [Flags]
         private enum CurveFlags
         {
-            LeftTop = 1 << 1,
-            RightTop = 1 << 2,
-            LeftBottom = 1 << 3,
-            RightBottom = 1 << 4,
+            LeftTop = 1 << 0,
+            RightTop = 1 << 1,
+            LeftBottom = 1 << 2,
+            RightBottom = 1 << 3,
         }
 
         [SerializeField]
@@ -123,19 +145,15 @@ namespace Yorozu.FlatUI
 
             var rect = transform as RectTransform;
 
-            var flag = ((_flags & CurveFlags.LeftTop) == CurveFlags.LeftTop ? 1 : 0) +
-                       ((_flags & CurveFlags.LeftBottom) == CurveFlags.LeftBottom ? 10 : 0) +
-                       ((_flags & CurveFlags.RightTop) == CurveFlags.RightTop ? 100 : 0) +
-                       ((_flags & CurveFlags.RightBottom) == CurveFlags.RightBottom ? 1000 : 0);
-
             var color = _color.r / 10 +
-                        +Mathf.FloorToInt(_color.g * 100) +
-                        +Mathf.FloorToInt(_color.b * 100) * 1000;
+                        Mathf.FloorToInt(_color.g * 100) +
+                        Mathf.FloorToInt(_color.b * 100) * 1000;
 
+            var flagsClamp = (int)_flags / 15f;
             for (var i = 0; i < vertexList.Count; i++)
             {
                 var vertex = vertexList[i];
-                vertex.uv1 = new Vector2(_radius, flag);
+                vertex.uv1 = new Vector2(_radius, flagsClamp);
                 vertex.uv2 = new Vector2(rect.rect.width, rect.rect.height);
                 if (_type == Type.OutLine)
                     vertex.uv3 = new Vector2(_outline, color);
