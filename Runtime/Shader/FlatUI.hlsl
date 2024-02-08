@@ -1,0 +1,120 @@
+
+// 負数:0, 正数:1 に変換
+// 条件を見たしているかどうかチェック
+#define IS(value) ceil(saturate(value))
+// a がb よりも小さいかどうか
+#define IS_SMALL(a, b) IS( b - a)
+			
+half4 Circle(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
+{
+    float r = min(width, height) * radius;
+    float2 XY = float2(uv.x * width, uv.y * height);
+				
+    // Calc Distance from each center of circle
+    // LeftTop, Center:(r, r)
+    float d_lt = (XY.x - r) * (XY.x - r) + (XY.y - r) * (XY.y - r);
+    // LeftBot, Center:(r, h - r)
+    float d_lb = (XY.x - r) * (XY.x - r) + (XY.y- (height - r)) * (XY.y - (height - r));
+    // RightTop, Center:(w - r, r)
+    float d_rt = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - r) * (XY.y - r);
+    // RightBot, Center:(w - r, h - r)
+    float d_rb = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - (height - r)) * (XY.y - (height - r));
+				
+    d_lt *= (flag & 1 << 2) == 1 << 2;
+    d_rt *= (flag & 1 << 3) == 1 << 3;
+    d_lb *= (flag & 1 << 0) == 1 << 0;
+    d_rb *= (flag & 1 << 1) == 1 << 1;
+				
+    float isNotCorner = 
+        IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
+        + IS(IS_SMALL(r, XY.y) + IS_SMALL(XY.y, (height - r)) - 1); // r < y < 1-r
+				
+    float left = lerp(
+        lerp(1, 0, IS(d_lt - r * r)),
+        lerp(1, 0, IS(d_lb - r * r)),
+        IS(uv.y > 0.5)
+    );
+    float right = lerp(
+        lerp(1, 0, IS(d_rt - r * r)),
+        lerp(1, 0, IS(d_rb - r * r)),
+        IS(uv.y > 0.5)
+    );
+    half v = lerp( 
+        lerp(left, right, IS(uv.x > 0.5)),
+        1,
+        IS(isNotCorner) // r < x < 1-r && r < y < 1-r
+    );
+
+    return lerp(baseColor, targetColor, v);
+}
+
+half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
+{
+    half radius = uv1.x;
+    int flag = (int)(uv1.y * 15);
+				
+    half width = uv.z;
+    half height = uv.w;
+				
+    #ifdef _TYPE_OUTLINE
+    half outline = uv1.w;
+    half4 outlineColor = half4(0, 0, 0, 1);
+				
+    half outlineColorData = uv1.z;
+    outlineColor.r = frac(uv1.z) * 10;
+    outlineColor.g = floor(outlineColorData) % 1000 / 100;
+    outlineColorData = floor(outlineColorData / 1000);
+    outlineColor.b = outlineColorData / 100;
+
+    half4 color = Circle(uv.xy, half4(0, 0, 0, 0), outlineColor, radius, width, height, flag);
+
+    // Outlineの最低幅
+    float r = min(width, height) * outline;
+
+    half2 newUV = half2(
+        lerp(-r / width, 1 + r / width, uv.x), 
+        lerp(-r / height, 1 + r / height, uv.y) 
+    );
+    half outlineX = (r / width) / (1 + r / width);
+    half outlineY = (r / height) / (1 + r / height);
+    // Inner outline
+    color = Circle(newUV, color, baseColor, radius, width - width * outline * 2, height - height * outline * 2, flag);
+
+    color.rgb = lerp(
+        color.rgb, 
+        outlineColor,
+        saturate(
+            (frac(uv.x * (1 + outlineX)) < outlineX) + 
+            (frac(uv.y * (1 + outlineY)) < outlineY)
+        )
+    );
+
+    return color;
+
+    #elif _TYPE_SEPARATE
+				
+    half4 color = Circle(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
+
+    half ratio = uv1.w;
+
+    half colorData = uv1.z;
+    half4 separateColor = half4(0, 0, 0, 1);
+    separateColor.r = frac(uv1.z) * 10;
+    separateColor.g = floor(colorData) % 1000 / 100;
+    colorData = floor(colorData / 1000);
+    separateColor.b = colorData / 100;
+
+    color.rgb = lerp(
+        separateColor,
+        color.rgb, 
+        IS_SMALL(uv.y, ratio)
+    );
+
+    return color;
+
+    #else
+
+    return  Circle(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
+
+    #endif
+}
