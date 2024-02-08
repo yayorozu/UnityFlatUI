@@ -134,7 +134,7 @@ namespace Yorozu.FlatUI
         [SerializeField, Range(0, 1f)]
         private float _separate = 0.8f;
 
-        [SerializeField]
+        [SerializeField, ColorUsage(false)]
         private Color _color;
 
         protected override void OnPopulateMesh(VertexHelper vh)
