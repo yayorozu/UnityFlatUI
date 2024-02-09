@@ -4,25 +4,9 @@ using UnityEngine.UI;
 
 namespace Yorozu.FlatUI
 {
-    [RequireComponent(typeof(CanvasRenderer))]
-    public class FlatCircle : MaskableGraphic
+    public class FlatCircle : FlatUI
     {
-#if UNITY_EDITOR
-        protected override void Reset()
-        {
-            base.Reset();
-            if (m_Material == null)
-                m_Material = Resources.Load<Material>("FlatUI/FlatCircle");
-        }
-
-        protected override void OnValidate()
-        {
-            base.OnValidate();
-            var graphic = GetComponent<Graphic>();
-            graphic.SetVerticesDirty();
-        }
-
-#endif
+        protected override string GetMaterialName() => "FlatCircle";
         
         [SerializeField, Range(0, 0.25f)]
         private float _outlineWidth;
