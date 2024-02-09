@@ -4,8 +4,8 @@
 #define IS(value) ceil(saturate(value))
 // a がb よりも小さいかどうか
 #define IS_SMALL(a, b) IS( b - a)
-			
-half4 Circle(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
+
+half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
     float r = min(width, height) * radius;
     float2 XY = float2(uv.x * width, uv.y * height);
@@ -72,7 +72,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
     half outline = uv1.w;
     half4 outlineColor = FloatToColor(uv1.z);
     
-    half4 color = Circle(uv.xy, half4(0, 0, 0, 0), outlineColor, radius, width, height, flag);
+    half4 color = RoundedCorner(uv.xy, half4(0, 0, 0, 0), outlineColor, radius, width, height, flag);
 
     // Outlineの最低幅
     float r = min(width, height) * outline;
@@ -84,7 +84,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
     half outlineX = (r / width) / (1 + r / width);
     half outlineY = (r / height) / (1 + r / height);
     // Inner outline
-    color = Circle(newUV, color, baseColor, radius, width - width * outline * 2, height - height * outline * 2, flag);
+    color = RoundedCorner(newUV, color, baseColor, radius, width - width * outline * 2, height - height * outline * 2, flag);
 
     color.rgb = lerp(
         color.rgb, 
@@ -99,7 +99,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 
     #elif _TYPE_SEPARATE
 				
-    half4 color = Circle(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
+    half4 color = RoundedCorner(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
 
     half ratio = uv1.w;
 
@@ -115,7 +115,9 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 
     #else
 
-    return Circle(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
+    return RoundedCorner(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
 
     #endif
+}
+
 }
