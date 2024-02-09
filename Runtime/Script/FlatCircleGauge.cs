@@ -66,7 +66,6 @@ namespace Yorozu.FlatUI
                 return;
 
             _cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
-            _cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord2;
         }
 
 #endif

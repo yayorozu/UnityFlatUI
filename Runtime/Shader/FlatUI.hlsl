@@ -153,3 +153,16 @@ half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
 
     return opaque * cutoff;
 }
+
+half4 Circle(half4 baseColor, float2 uv, float4 texcoord1)
+{
+    half r = distance(uv.xy, half2(0.5, 0.5));
+    half4 color = lerp(baseColor, half4(0, 0, 0, 0), smoothstep(0.495, 0.5, r));
+
+    half outlineWidth = texcoord1.x;
+    half3 outlineColor = texcoord1.yzw;
+
+    color.rgb = lerp(baseColor.rgb, outlineColor.rgb, smoothstep(0.495 - outlineWidth, 0.5 - outlineWidth, r));
+    
+    return color;
+}
