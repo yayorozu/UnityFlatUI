@@ -6,6 +6,8 @@
 
 static float PI = 3.14159265;
 
+#pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
+
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
     float r = min(width, height) * radius;

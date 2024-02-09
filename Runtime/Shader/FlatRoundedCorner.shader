@@ -45,7 +45,6 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			#pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
 			#include "UnityCG.cginc"
 			#include "UnityUI.cginc"
