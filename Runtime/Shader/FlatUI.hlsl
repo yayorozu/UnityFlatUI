@@ -1,9 +1,10 @@
-
 // 負数:0, 正数:1 に変換
 // 条件を見たしているかどうかチェック
 #define IS(value) ceil(saturate(value))
 // a がb よりも小さいかどうか
 #define IS_SMALL(a, b) IS( b - a)
+
+static float PI = 3.14159265;
 
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
@@ -120,4 +121,35 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
     #endif
 }
 
+half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
+{
+    float2 pos = (uv.xy - float2(0.5, 0.5)) * 2.0;
+    
+    float angle = (atan2(pos.y, pos.x) - atan2(texcoord1.y, texcoord1.x)) / (PI * 2);
+	
+    if (angle < 0) {
+        angle += 1.0;
+    }
+				
+    float value1 = uv.z;
+    float value2 = uv.w;
+    float width = 1 - frac(value1) * 10;
+    float amount = floor(value1) / 100;
+    float reverse = frac(value2) * 10;
+    float maxLength = floor(value2) / 100;
+    if (reverse > 0) {
+        angle = 1 - angle;
+    }
+				
+    amount = lerp(0, amount, maxLength); 
+				
+    float len = length(pos);
+    float edge = 0;
+    float inner = smoothstep(width, width + edge, len);
+    float outer = smoothstep(1.0 - edge, 1.0, len);
+    float opaque = inner - outer;
+    
+    half cutoff = angle > amount ? 0 : 1;
+
+    return opaque * cutoff;
 }

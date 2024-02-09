@@ -97,12 +97,13 @@ namespace Yorozu.FlatUI
 
             var value1 = _width / 10f + Mathf.FloorToInt(_fillAmount * 100);
             var value2 = (_isReverse ? 0.1f : 0f) + Mathf.FloorToInt(_length * 100);
-
+            
             for (var i = 0; i < vertexList.Count; i++)
             {
                 var vertex = vertexList[i];
-                vertex.uv1 = new Vector2(value1, value2);
-                vertex.uv2 = angleVector;
+                vertex.uv0.z = value1;
+                vertex.uv0.w = value2;
+                vertex.uv1 = angleVector;
                 vertexList[i] = vertex;
             }
 

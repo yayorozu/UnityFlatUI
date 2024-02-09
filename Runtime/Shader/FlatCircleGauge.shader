@@ -47,24 +47,21 @@
 
 			#include "UnityCG.cginc"
 			#include "UnityUI.cginc"
-			
-			static const float PI = 3.14159265f;
+			#include "FlatUI.hlsl"
 			
 			struct appdata
 			{
 				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
+				float4 uv : TEXCOORD0;
 				float2 texcoord1 : TEXCOORD1;
-				float2 texcoord2 : TEXCOORD2;
 				
 				fixed4 color : COLOR;
 			};
 
 			struct v2f
 			{
-				float2 uv : TEXCOORD0;
+				float4 uv : TEXCOORD0;
 				float2 texcoord1 : TEXCOORD1;
-				float2 texcoord2 : TEXCOORD2;
 				
 				float4 vertex : SV_POSITION;
 				fixed4 color : COLOR;
@@ -78,7 +75,6 @@
 				o.worldPosition = v.vertex;
 				o.uv = v.uv;
 				o.texcoord1 = v.texcoord1;
-				o.texcoord2 = v.texcoord2;
 				o.color = v.color;
 				return o;
 			}
@@ -87,35 +83,9 @@
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-				float2 pos = (i.uv - float2(0.5, 0.5)) * 2.0;
-				float angle = (atan2(pos.y, pos.x) - atan2(i.texcoord2.y, i.texcoord2.x)) / (PI * 2);
-	
-				if (angle < 0) {
-					angle += 1.0;
-				}
-				
-				float value1 = i.texcoord1.x;
-				float value2 = i.texcoord1.y;
-				float width = 1 - frac(value1) * 10;
-				float amount = floor(value1) / 100;
-				float reverse = frac(value2) * 10;
-				float maxLength = floor(value2) / 100;
-				if (reverse > 0)
-				{
-					angle = 1 - angle;
-				}
-				
-				amount = lerp(0, amount, maxLength); 
-				
-				float len = length(pos);
-				float edge = 0;
-				float inner = smoothstep(width, width + edge, len);
-				float outer = smoothstep(1.0 - edge, 1.0, len);
-				float opaque = inner - outer;
-				
+				half mulAlpha = CircleGuageFragmentAlpha(i.uv, i.texcoord1);
 				fixed4 c = i.color;
-				fixed cutoff = angle > amount ? 0 : 1;
-				c.a = i.color.a * opaque * cutoff * UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
+				c.a = i.color.a * mulAlpha * UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
 				
 				return c;
 			}
