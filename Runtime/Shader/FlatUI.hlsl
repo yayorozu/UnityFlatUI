@@ -8,7 +8,7 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_HEART _SHAPE_CROSS
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_HEART _SHAPE_CROSS
 
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
@@ -203,20 +203,38 @@ float CalculateRoundStarAlpha(float2 uv, float strength, int numPoints, float ro
     return 1 - step(distanceSquared, rsq);
 }
 
+float CalculateStarAlpha(float2 uv, float strength, int numPoints)
+{
+    float2 polarCoordinates = UVtoPolarCoordinates(uv, strength);
+
+    const float reciprocalSquare = polarCoordinates.x * polarCoordinates.x;
+    const float angle = 2.0 * PI * polarCoordinates.y;
+    const float angleOffset = 2.0 * PI / numPoints;
+    const float distance = cos(angleOffset) / cos(angleOffset - acos(cos(numPoints * angle)) / numPoints);
+    const float distanceSquared = distance * distance;
+    
+    return 1 - step(distanceSquared, reciprocalSquare);
+}
+
 float CalculateShapeAlpha(float2 uv, float strength, float value, float value2)
 {
 #ifdef _SHAPE_CIRCLE
+    
     return CalculateCircleAlpha(uv, strength);
 #elif _SHAPE_POLYGON
+    
     int numPoints = (int)(value * 10);
     return CalculatePolygonAlpha(uv, strength, numPoints);
 #elif _SHAPE_STAR
     
+    int numPoints = (int)(value * 10);
+    return CalculateStarAlpha(uv, strength, numPoints);    
 #elif _SHAPE_ROUND_STAR
+    
     int numPoints = (int)(value * 10);
     return CalculateRoundStarAlpha(uv, strength, numPoints, value2);
 #else
-    
+
 #endif
     return 0;
 }
