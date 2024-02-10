@@ -8,7 +8,7 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_HEART _SHAPE_CROSS
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS
 
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
@@ -216,6 +216,20 @@ float CalculateStarAlpha(float2 uv, float strength, int numPoints)
     return 1 - step(distanceSquared, reciprocalSquare);
 }
 
+float CalculateHearAlpha(float2 uv, float strength)
+{
+    uv -= 0.5;
+    uv.x = 1.2 * uv.x - sign(uv.x) * uv.y * 0.55;
+    return step(length(uv) - strength, 0);
+}
+
+float CalculateCrossAlpha(float2 uv, float strength, float width)
+{
+    float2 p = abs(uv - 0.5);
+    p *= (1 - strength) * 2;
+    return step(min(p.x, p.y), width);
+}
+
 float CalculateShapeAlpha(float2 uv, float strength, float value, float value2)
 {
 #ifdef _SHAPE_CIRCLE
@@ -233,6 +247,13 @@ float CalculateShapeAlpha(float2 uv, float strength, float value, float value2)
     
     int numPoints = (int)(value * 10);
     return CalculateRoundStarAlpha(uv, strength, numPoints, value2);
+
+#elif _SHAPE_HEART
+    return CalculateHearAlpha(uv, strength);
+
+#elif _SHAPE_CROSS
+
+    return CalculateCrossAlpha(uv, strength, value2);
 #else
 
 #endif

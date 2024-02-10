@@ -19,6 +19,7 @@ namespace Yorozu.FlatUI
             Star,
             Heart,
             Cross,
+            Ring,
         }
         
         [SerializeField]
