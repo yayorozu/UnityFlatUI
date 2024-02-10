@@ -4,9 +4,27 @@ using UnityEngine.UI;
 
 namespace Yorozu.FlatUI
 {
-    public class FlatCircle : FlatUI
+    public class FlatShapes : FlatUI
     {
-        protected override string GetMaterialName() => "FlatCircle";
+        protected override string GetMaterialName()
+        {
+            return $"FlatShape{_shapeType}";
+        }
+
+        public enum FigureType
+        {
+            Circle = 1,
+            Polygon,
+            Star,
+            Heart,
+            Cross,
+        }
+        
+        [SerializeField]
+        private FigureType _shapeType;
+        
+        [SerializeField, Range(3, 10)]
+        private int _poloygon = 6;
         
         [SerializeField, Range(0, 0.25f)]
         private float _outlineWidth;
@@ -20,11 +38,13 @@ namespace Yorozu.FlatUI
             var vertexList = new List<UIVertex>();
             vh.GetUIVertexStream(vertexList);
 
+            var polygon = _poloygon / 10f;
             var uv1Param = new Vector4(_outlineWidth, _outlineColor.r, _outlineColor.g, _outlineColor.b);
-                
+            
             for (var i = 0; i < vertexList.Count; i++)
             {
                 var vertex = vertexList[i];
+                vertex.uv0.w = polygon;
                 vertex.uv1 = uv1Param;
                 vertexList[i] = vertex;
             }

@@ -4,9 +4,11 @@
 // a がb よりも小さいかどうか
 #define IS_SMALL(a, b) IS( b - a)
 
-static float PI = 3.14159265;
+static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
+
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_HEART _SHAPE_CROSS
 
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
@@ -71,7 +73,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
     half width = uv.z;
     half height = uv.w;
 				
-    #ifdef _TYPE_OUTLINE
+#ifdef _TYPE_OUTLINE
     half outline = uv1.w;
     half4 outlineColor = FloatToColor(uv1.z);
     
@@ -100,7 +102,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 
     return color;
 
-    #elif _TYPE_SEPARATE
+#elif _TYPE_SEPARATE
 				
     half4 color = RoundedCorner(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
 
@@ -116,11 +118,11 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 
     return color;
 
-    #else
+#else
 
     return RoundedCorner(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
 
-    #endif
+#endif
 }
 
 half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
@@ -156,15 +158,47 @@ half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
     return opaque * cutoff;
 }
 
-half4 Circle(half4 baseColor, float2 uv, float4 texcoord1)
+half4 Circle(half4 baseColor, float2 uv, float4 uv1)
 {
-    half r = distance(uv.xy, half2(0.5, 0.5));
-    half4 color = lerp(baseColor, half4(0, 0, 0, 0), smoothstep(0.495, 0.5, r));
+    const half outlineWidth = uv1.x;
+    half3 outlineColor = uv1.yzw;
+    
+    const half radius = distance(uv.xy, half2(0.5, 0.5));
+    half4 color = lerp(baseColor, half4(0, 0, 0, 0), smoothstep(0.495, 0.5, radius));
+    
+    half outlineLerp = smoothstep(0.495 - outlineWidth, 0.5 - outlineWidth, radius)
+        * (1 - step(outlineWidth, 0)); 
 
-    half outlineWidth = texcoord1.x;
-    half3 outlineColor = texcoord1.yzw;
-
-    color.rgb = lerp(baseColor.rgb, outlineColor.rgb, smoothstep(0.495 - outlineWidth, 0.5 - outlineWidth, r));
+    color.rgb = lerp(baseColor.rgb, outlineColor.rgb, outlineLerp);
     
     return color;
+}
+
+// 多角形
+half4 CalculatePolygon(half4 baseColor, float2 uv, float4 uv1, int numSides)
+{
+    half outlineWidth = uv1.x;
+    half3 outlineColor = uv1.yzw;
+    
+    uv += - 0.5;
+    float radius = length(uv);
+    float theta = atan2(uv.x, uv.y) + 2.0 * PI;
+    theta = theta % (2.0 * PI / numSides);
+
+    float polygonDistance = cos(PI / numSides) / cos (PI / numSides - theta);
+    baseColor.a *= step(radius, polygonDistance * 0.5); 
+    return baseColor;
+}
+
+half4 Shapes(float4 baseColor, float4 uv0, float4 uv1)
+{
+#ifdef _SHAPE_CIRCLE
+    // 円
+    return Circle(baseColor, uv0.xy, uv1);
+#elif _SHAPE_POLYGON
+    int count = (int)(uv0.w * 10);
+    return  CalculatePolygon(baseColor, uv0.xy, uv1, count);
+#else
+    return baseColor;
+#endif
 }

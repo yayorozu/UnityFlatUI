@@ -11,7 +11,7 @@ namespace Yorozu.FlatUI
         
         protected RectTransform _rectTransform => transform as RectTransform;
         
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
         [NonSerialized]
         private int _parentId;
 
@@ -46,6 +46,11 @@ namespace Yorozu.FlatUI
         {
             if (m_Material == null || m_Material.name != name)
                 m_Material = FindMaterial(name);
+
+            if (m_Material == null)
+            {
+                Debug.LogError($"Not Found Material {name}");
+            }
         }
         
         protected override void OnValidate()

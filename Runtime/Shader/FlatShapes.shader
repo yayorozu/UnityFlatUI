@@ -1,7 +1,10 @@
-﻿Shader "Flat/FlatCircle"
+﻿Shader "Flat/FlatShape"
 {
 	Properties
 	{
+		[KeywordEnum(CIRCLE, POLYGON, STAR, HEART, CROSS)]
+		_SHAPE("Shape", Float) = 0
+		
 		_StencilComp("Stencil Comparison", Float) = 8
 		_Stencil("Stencil ID", Float) = 0
 		_StencilOp("Stencil Operation", Float) = 0
@@ -52,7 +55,7 @@
 			{
                 float4 vertex   : POSITION;
                 float4 color    : COLOR;
-                float2 uv : TEXCOORD0;
+                float4 uv : TEXCOORD0;
                 float4 uv1 : TEXCOORD1;
 			};
 
@@ -60,7 +63,7 @@
 			{
                 float4 vertex   : SV_POSITION;
                 half4 color    : COLOR;
-                float2 uv  : TEXCOORD0;
+                float4 uv  : TEXCOORD0;
                 float4 uv1 : TEXCOORD1;
                 float4 worldPosition : TEXCOORD2;
 			};
@@ -80,13 +83,11 @@
 
 			half4 frag(v2f i) : SV_Target
 			{
-				half4 color = Circle(i.color, i.uv, i.uv1);
+				half4 color = Shapes(i.color, i.uv, i.uv1);
 				color.a *= UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
 				return color;
 			}
 			ENDCG
 		}
 	}
-	
-	CustomEditor "Yorozu.FlatUI.Tool.FlatShaderGUI"
 }
