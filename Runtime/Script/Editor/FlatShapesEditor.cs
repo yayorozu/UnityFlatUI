@@ -9,6 +9,7 @@ namespace Yorozu.FlatUI.Tool
         private SerializedProperty _raycast;
         private SerializedProperty _shapeType;
         private SerializedProperty _poloygon;
+        private SerializedProperty _value;
         private SerializedProperty _outlineWidth;
         private SerializedProperty _outlineColor;
 
@@ -18,6 +19,7 @@ namespace Yorozu.FlatUI.Tool
             _raycast = serializedObject.FindProperty("m_RaycastTarget");
             _shapeType = serializedObject.FindProperty("_shapeType");
             _poloygon = serializedObject.FindProperty("_poloygon");
+            _value = serializedObject.FindProperty("_value");
             _outlineWidth = serializedObject.FindProperty("_outlineWidth");
             _outlineColor = serializedObject.FindProperty("_outlineColor");
         }
@@ -29,6 +31,7 @@ namespace Yorozu.FlatUI.Tool
             EditorGUILayout.PropertyField(_raycast);
             EditorGUILayout.PropertyField(_shapeType);
             EditorGUILayout.PropertyField(_poloygon);
+            EditorGUILayout.PropertyField(_value);
             EditorGUILayout.PropertyField(_outlineWidth);
             EditorGUILayout.PropertyField(_outlineColor);
 

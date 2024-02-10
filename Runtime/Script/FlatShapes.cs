@@ -15,6 +15,7 @@ namespace Yorozu.FlatUI
         {
             Circle = 1,
             Polygon,
+            RoundStar,
             Star,
             Heart,
             Cross,
@@ -25,6 +26,9 @@ namespace Yorozu.FlatUI
         
         [SerializeField, Range(3, 10)]
         private int _poloygon = 6;
+
+        [SerializeField]
+        private float _value;
         
         [SerializeField, Range(0, 0.25f)]
         private float _outlineWidth;
@@ -44,7 +48,8 @@ namespace Yorozu.FlatUI
             for (var i = 0; i < vertexList.Count; i++)
             {
                 var vertex = vertexList[i];
-                vertex.uv0.w = polygon;
+                vertex.uv0.z = polygon;
+                vertex.uv0.w = _value;
                 vertex.uv1 = uv1Param;
                 vertexList[i] = vertex;
             }

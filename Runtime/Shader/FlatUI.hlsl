@@ -8,7 +8,7 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_HEART _SHAPE_CROSS
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_HEART _SHAPE_CROSS
 
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
@@ -125,16 +125,24 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 #endif
 }
 
+float2 UVtoPolarCoordinates(float2 uv)
+{
+    float2 delta = uv - float2(0.5, 0.5);
+    float radius = length(delta) * 2 * 1;
+    float angle = atan2(delta.x, delta.y) * 1.0 / 6.28 * 1;
+    return float2(radius, angle);
+}
+
 half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
 {
     float2 pos = (uv.xy - float2(0.5, 0.5)) * 2.0;
     
     float angle = (atan2(pos.y, pos.x) - atan2(texcoord1.y, texcoord1.x)) / (PI * 2);
-	
+
     if (angle < 0) {
         angle += 1.0;
     }
-				
+
     float value1 = uv.z;
     float value2 = uv.w;
     float width = 1 - frac(value1) * 10;
@@ -144,9 +152,9 @@ half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
     if (reverse > 0) {
         angle = 1 - angle;
     }
-				
+
     amount = lerp(0, amount, maxLength); 
-				
+
     float len = length(pos);
     float edge = 0;
     float inner = smoothstep(width, width + edge, len);
@@ -158,47 +166,78 @@ half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
     return opaque * cutoff;
 }
 
-half4 Circle(half4 baseColor, float2 uv, float4 uv1)
+half CalculateCircleAlpha(float2 uv, float strength)
 {
-    const half outlineWidth = uv1.x;
-    half3 outlineColor = uv1.yzw;
-    
     const half radius = distance(uv.xy, half2(0.5, 0.5));
-    half4 color = lerp(baseColor, half4(0, 0, 0, 0), smoothstep(0.495, 0.5, radius));
-    
-    half outlineLerp = smoothstep(0.495 - outlineWidth, 0.5 - outlineWidth, radius)
-        * (1 - step(outlineWidth, 0)); 
-
-    color.rgb = lerp(baseColor.rgb, outlineColor.rgb, outlineLerp);
-    
-    return color;
+    return smoothstep(strength, strength - 0.01, radius);
 }
 
 // 多角形
-half4 CalculatePolygon(half4 baseColor, float2 uv, float4 uv1, int numSides)
+half CalculatePolygonAlpha(float2 uv, float strength, int numSides)
 {
-    half outlineWidth = uv1.x;
-    half3 outlineColor = uv1.yzw;
-    
     uv += - 0.5;
     float radius = length(uv);
     float theta = atan2(uv.x, uv.y) + 2.0 * PI;
     theta = theta % (2.0 * PI / numSides);
 
     float polygonDistance = cos(PI / numSides) / cos (PI / numSides - theta);
-    baseColor.a *= step(radius, polygonDistance * 0.5); 
-    return baseColor;
+    return  step(radius, polygonDistance * strength); 
+}
+
+float CalculateRoundStarAlpha(float2 uv, int numPoints, float size)
+{
+    float2 polarCoordinates = UVtoPolarCoordinates(uv);
+    
+    float rsq = polarCoordinates.x * polarCoordinates.x;
+    float angle = 2.0 * PI * polarCoordinates.y;
+
+    float angleOffset = 3.0 * PI / (2.0 * numPoints);
+    float angleSink = asin(size);
+    float angleSinkCos = asin(size * cos(numPoints * angle));
+
+    float distance = cos(angleSink / numPoints + angleOffset) / cos(angleSinkCos / numPoints + angleOffset);
+    float distanceSquared = distance * distance;
+    
+    return 1 - step(distanceSquared, rsq);
+}
+
+float CalculateShapeAlpha(float2 uv, float strength, float value, float value2)
+{
+    int a = (int)(value * 10);
+    return CalculateRoundStarAlpha(uv, a, value2);
+#ifdef _SHAPE_CIRCLE
+    return CalculateCircleAlpha(uv, strength);
+#elif _SHAPE_POLYGON
+    int count = (int)(value * 10);
+    return CalculatePolygonAlpha(uv, strength, count);
+#elif _SHAPE_STAR
+    
+#elif _SHAPE_ROUND_STAR
+    // int numSides = (int)(value * 10);
+    // float2 center = float2(0.5, 0.5);
+    // float2 size = float2(0.5, 0.5);
+    // float angle = 0;
+    // float roundness = 0.5;
+    // return CalculateStarAlpha(uv, center, size, angle, numSides, roundness);
+#else
+    
+#endif
+    return 0;
 }
 
 half4 Shapes(float4 baseColor, float4 uv0, float4 uv1)
 {
-#ifdef _SHAPE_CIRCLE
-    // 円
-    return Circle(baseColor, uv0.xy, uv1);
-#elif _SHAPE_POLYGON
-    int count = (int)(uv0.w * 10);
-    return  CalculatePolygon(baseColor, uv0.xy, uv1, count);
-#else
+    half outlineWidth = uv1.x;
+    half3 outlineColor = uv1.yzw;
+
+    float outlineStrength = 0.5;
+    float strength = 0.5 - outlineWidth;
+
+    float outlineAlpha = CalculateShapeAlpha(uv0.xy, outlineStrength, uv0.z, uv0.w);
+    float alpha = CalculateShapeAlpha(uv0.xy, strength, uv0.z, uv0.w);
+
+    baseColor.a *= outlineAlpha;
+    baseColor.rgb = lerp(baseColor.rgb, outlineColor, (1 - alpha) * (1 - step(outlineWidth, 0)));
+
     return baseColor;
-#endif
 }
