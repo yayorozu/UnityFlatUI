@@ -2,7 +2,7 @@
 {
 	Properties
 	{
-		[KeywordEnum(CIRCLE, POLYGON, STAR, HEART, CROSS)]
+		[KeywordEnum(CIRCLE, POLYGON, ROUND_STAR, STAR, HEART, CROSS)]
 		_SHAPE("Shape", Float) = 0
 		
 		_StencilComp("Stencil Comparison", Float) = 8

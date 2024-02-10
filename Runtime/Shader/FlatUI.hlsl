@@ -125,14 +125,6 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 #endif
 }
 
-float2 UVtoPolarCoordinates(float2 uv)
-{
-    float2 delta = uv - float2(0.5, 0.5);
-    float radius = length(delta) * 2 * 1;
-    float angle = atan2(delta.x, delta.y) * 1.0 / 6.28 * 1;
-    return float2(radius, angle);
-}
-
 half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
 {
     float2 pos = (uv.xy - float2(0.5, 0.5)) * 2.0;
@@ -166,6 +158,15 @@ half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
     return opaque * cutoff;
 }
 
+float2 UVtoPolarCoordinates(float2 uv, float strength)
+{
+    float2 delta = uv - float2(0.5, 0.5);
+    delta *= (1 - strength) * 2;
+    float radius = length(delta) * 2;
+    float angle = atan2(delta.x, delta.y) * 1.0 / 6.28;
+    return float2(radius, angle);
+}
+
 half CalculateCircleAlpha(float2 uv, float strength)
 {
     const half radius = distance(uv.xy, half2(0.5, 0.5));
@@ -184,18 +185,19 @@ half CalculatePolygonAlpha(float2 uv, float strength, int numSides)
     return  step(radius, polygonDistance * strength); 
 }
 
-float CalculateRoundStarAlpha(float2 uv, int numPoints, float size)
+float CalculateRoundStarAlpha(float2 uv, float strength, int numPoints, float round)
 {
-    float2 polarCoordinates = UVtoPolarCoordinates(uv);
+    float2 polarCoordinates = UVtoPolarCoordinates(uv, strength);
     
     float rsq = polarCoordinates.x * polarCoordinates.x;
     float angle = 2.0 * PI * polarCoordinates.y;
 
     float angleOffset = 3.0 * PI / (2.0 * numPoints);
-    float angleSink = asin(size);
-    float angleSinkCos = asin(size * cos(numPoints * angle));
+    float angleSink = asin(round);
+    float angleSinkCos = asin(round * cos(numPoints * angle));
 
     float distance = cos(angleSink / numPoints + angleOffset) / cos(angleSinkCos / numPoints + angleOffset);
+    
     float distanceSquared = distance * distance;
     
     return 1 - step(distanceSquared, rsq);
@@ -203,22 +205,16 @@ float CalculateRoundStarAlpha(float2 uv, int numPoints, float size)
 
 float CalculateShapeAlpha(float2 uv, float strength, float value, float value2)
 {
-    int a = (int)(value * 10);
-    return CalculateRoundStarAlpha(uv, a, value2);
 #ifdef _SHAPE_CIRCLE
     return CalculateCircleAlpha(uv, strength);
 #elif _SHAPE_POLYGON
-    int count = (int)(value * 10);
-    return CalculatePolygonAlpha(uv, strength, count);
+    int numPoints = (int)(value * 10);
+    return CalculatePolygonAlpha(uv, strength, numPoints);
 #elif _SHAPE_STAR
     
 #elif _SHAPE_ROUND_STAR
-    // int numSides = (int)(value * 10);
-    // float2 center = float2(0.5, 0.5);
-    // float2 size = float2(0.5, 0.5);
-    // float angle = 0;
-    // float roundness = 0.5;
-    // return CalculateStarAlpha(uv, center, size, angle, numSides, roundness);
+    int numPoints = (int)(value * 10);
+    return CalculateRoundStarAlpha(uv, strength, numPoints, value2);
 #else
     
 #endif
