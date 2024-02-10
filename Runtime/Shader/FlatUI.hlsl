@@ -8,7 +8,7 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING
 
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
@@ -148,9 +148,8 @@ half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
     amount = lerp(0, amount, maxLength); 
 
     float len = length(pos);
-    float edge = 0;
-    float inner = smoothstep(width, width + edge, len);
-    float outer = smoothstep(1.0 - edge, 1.0, len);
+    float inner = smoothstep(width, width, len);
+    float outer = smoothstep(1.0, 1.0, len);
     float opaque = inner - outer;
     
     half cutoff = angle > amount ? 0 : 1;
@@ -230,30 +229,41 @@ float CalculateCrossAlpha(float2 uv, float strength, float width)
     return step(min(p.x, p.y), width);
 }
 
-float CalculateShapeAlpha(float2 uv, float strength, float value, float value2)
+float CalculateRingAlpha(float2 uv, float width)
+{
+    float2 pos = (uv.xy - float2(0.5, 0.5)) * 2.0;
+    float len = length(pos);
+    float inner = smoothstep(width, width, len);
+    float outer = smoothstep(1.0, 1.0, len);
+    return  inner - outer;
+}
+
+float CalculateShapeAlpha(float2 uv, float strength, int intValue, float value)
 {
 #ifdef _SHAPE_CIRCLE
     
     return CalculateCircleAlpha(uv, strength);
 #elif _SHAPE_POLYGON
     
-    int numPoints = (int)(value * 10);
-    return CalculatePolygonAlpha(uv, strength, numPoints);
+    return CalculatePolygonAlpha(uv, strength, intValue);
 #elif _SHAPE_STAR
     
-    int numPoints = (int)(value * 10);
-    return CalculateStarAlpha(uv, strength, numPoints);    
+    return CalculateStarAlpha(uv, strength, intValue);    
 #elif _SHAPE_ROUND_STAR
     
-    int numPoints = (int)(value * 10);
-    return CalculateRoundStarAlpha(uv, strength, numPoints, value2);
+    return CalculateRoundStarAlpha(uv, strength, intValue, value);
 
 #elif _SHAPE_HEART
     return CalculateHearAlpha(uv, strength);
 
 #elif _SHAPE_CROSS
 
-    return CalculateCrossAlpha(uv, strength, value2);
+    return CalculateCrossAlpha(uv, strength, value);
+
+#elif _SHAPE_RING
+
+    return CalculateRingAlpha(uv, value);
+    
 #else
 
 #endif
@@ -268,8 +278,9 @@ half4 Shapes(float4 baseColor, float4 uv0, float4 uv1)
     float outlineStrength = 0.5;
     float strength = 0.5 - outlineWidth;
 
-    float outlineAlpha = CalculateShapeAlpha(uv0.xy, outlineStrength, uv0.z, uv0.w);
-    float alpha = CalculateShapeAlpha(uv0.xy, strength, uv0.z, uv0.w);
+    int intValue = (int)(uv0.z * 10);
+    float outlineAlpha = CalculateShapeAlpha(uv0.xy, outlineStrength, intValue, uv0.w);
+    float alpha = CalculateShapeAlpha(uv0.xy, strength, intValue, uv0.w);
 
     baseColor.a *= outlineAlpha;
     baseColor.rgb = lerp(baseColor.rgb, outlineColor, (1 - alpha) * (1 - step(outlineWidth, 0)));
