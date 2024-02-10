@@ -98,6 +98,13 @@ namespace Yorozu.FlatUI
             _cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
         }
 #endif
+
+        protected float ColorToFloat(Color color)
+        {
+            return color.r / 10 +
+                Mathf.FloorToInt(color.g * 100) +
+                Mathf.FloorToInt(color.b * 100) * 1000;
+        }
         
     }
 }

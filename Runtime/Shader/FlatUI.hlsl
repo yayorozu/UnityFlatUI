@@ -125,18 +125,30 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 #endif
 }
 
-half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
+float CalculateRingAlpha(float2 uv, float width, float outerStart = 1)
 {
-    float2 pos = (uv.xy - float2(0.5, 0.5)) * 2.0;
+    const float2 pos = (uv.xy - float2(0.5, 0.5)) * 2.0;
+    const float len = length(pos);
+    const float inner = smoothstep(width, width, len);
+    const float outer = smoothstep(outerStart, outerStart, len);
+    return  inner - outer;
+}
+
+half4 CircleGaugeFragmentAlpha(half4 baseColor, float4 uv0, float4 uv1)
+{
+    float2 pos = (uv0.xy - float2(0.5, 0.5)) * 2.0;
     
-    float angle = (atan2(pos.y, pos.x) - atan2(texcoord1.y, texcoord1.x)) / (PI * 2);
+    float angle = (atan2(pos.y, pos.x) - atan2(uv1.y, uv1.x)) / (PI * 2);
 
     if (angle < 0) {
         angle += 1.0;
     }
 
-    float value1 = uv.z;
-    float value2 = uv.w;
+    half frameWidth = uv1.z;
+    half3 frameColor = FloatToColor(uv1.w).rgb;
+
+    float value1 = uv0.z;
+    float value2 = uv0.w;
     float width = 1 - frac(value1) * 10;
     float amount = floor(value1) / 100;
     float reverse = frac(value2) * 10;
@@ -145,16 +157,22 @@ half CircleGuageFragmentAlpha(float4 uv, float2 texcoord1)
         angle = 1 - angle;
     }
 
-    amount = lerp(0, amount, maxLength); 
+    amount = lerp(0, amount, maxLength);
+    const half cutoff = angle > amount ? 0 : 1;
 
-    float len = length(pos);
-    float inner = smoothstep(width, width, len);
-    float outer = smoothstep(1.0, 1.0, len);
-    float opaque = inner - outer;
-    
-    half cutoff = angle > amount ? 0 : 1;
+    // ゲージの部分
+    const float gauge = CalculateRingAlpha(uv0.xy, width + frameWidth, 1.0 - frameWidth);
+    const float frame = CalculateRingAlpha(uv0.xy, width, 1.0);
 
-    return opaque * cutoff;
+    half4 color = 1;
+    color.rgb = lerp(frameColor, baseColor.rgb, gauge * cutoff * step(0, frameWidth));
+    color.a = lerp(
+        frame * (angle > maxLength ? 0 : 1),
+        gauge * cutoff,
+        step(frameWidth, 0)
+    );
+
+    return color;
 }
 
 float2 UVtoPolarCoordinates(float2 uv, float strength)
@@ -227,15 +245,6 @@ float CalculateCrossAlpha(float2 uv, float strength, float width)
     float2 p = abs(uv - 0.5);
     p *= (1 - strength) * 2;
     return step(min(p.x, p.y), width);
-}
-
-float CalculateRingAlpha(float2 uv, float width)
-{
-    float2 pos = (uv.xy - float2(0.5, 0.5)) * 2.0;
-    float len = length(pos);
-    float inner = smoothstep(width, width, len);
-    float outer = smoothstep(1.0, 1.0, len);
-    return  inner - outer;
 }
 
 float CalculateShapeAlpha(float2 uv, float strength, int intValue, float value)

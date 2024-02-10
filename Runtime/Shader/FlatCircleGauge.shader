@@ -53,7 +53,7 @@
 			{
 				float4 vertex : POSITION;
 				float4 uv : TEXCOORD0;
-				float2 texcoord1 : TEXCOORD1;
+				float4 texcoord1 : TEXCOORD1;
 				
 				fixed4 color : COLOR;
 			};
@@ -61,10 +61,10 @@
 			struct v2f
 			{
 				float4 uv : TEXCOORD0;
-				float2 texcoord1 : TEXCOORD1;
+				float4 texcoord1 : TEXCOORD1;
 				
 				float4 vertex : SV_POSITION;
-				fixed4 color : COLOR;
+				half4 color : COLOR;
 				float4 worldPosition : TEXCOORD4;
 			};
 			
@@ -81,13 +81,11 @@
 			
 			float4 _ClipRect;
 
-			fixed4 frag(v2f i) : SV_Target
+			half4 frag(v2f i) : SV_Target
 			{
-				half mulAlpha = CircleGuageFragmentAlpha(i.uv, i.texcoord1);
-				fixed4 c = i.color;
-				c.a = i.color.a * mulAlpha * UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
-				
-				return c;
+				half4 color = CircleGaugeFragmentAlpha(i.color, i.uv, i.texcoord1);
+				color.a *= i.color.a * UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
+				return color;
 			}
 			ENDCG
 		}

@@ -12,6 +12,8 @@ namespace Yorozu.FlatUI.Tool
         private SerializedProperty _fillAmount;
         private SerializedProperty _isReverse;
         private SerializedProperty _length;
+        private SerializedProperty _frameWidth;
+        private SerializedProperty _frameColor;
 
         private void OnEnable()
         {
@@ -22,6 +24,8 @@ namespace Yorozu.FlatUI.Tool
             _fillAmount = serializedObject.FindProperty("_fillAmount");
             _isReverse = serializedObject.FindProperty("_isReverse");
             _length = serializedObject.FindProperty("_length");
+            _frameWidth = serializedObject.FindProperty("_frameWidth");
+            _frameColor = serializedObject.FindProperty("_frameColor");
         }
 
         public override void OnInspectorGUI()
@@ -34,6 +38,8 @@ namespace Yorozu.FlatUI.Tool
             EditorGUILayout.PropertyField(_fillAmount);
             EditorGUILayout.PropertyField(_isReverse);
             EditorGUILayout.PropertyField(_length);
+            EditorGUILayout.PropertyField(_frameWidth);
+            EditorGUILayout.PropertyField(_frameColor);
 
             serializedObject.ApplyModifiedProperties();
         }

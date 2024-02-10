@@ -61,9 +61,7 @@ namespace Yorozu.FlatUI
 
             var rect = _rectTransform.rect;
 
-            var color = _color.r / 10 +
-                        Mathf.FloorToInt(_color.g * 100) +
-                        Mathf.FloorToInt(_color.b * 100) * 1000;
+            var color = ColorToFloat(_color);
 
             var flagsClamp = (int)_flags / 15f;
             var uv1Param = new Vector4(_radius, flagsClamp, color);
