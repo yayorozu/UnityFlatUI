@@ -21,10 +21,11 @@ namespace Yorozu.FlatUI
             Heart,
             Cross,
             Ring,
+            Polar,
         }
         
         [SerializeField]
-        private ShapeType _shapeType;
+        private ShapeType _shapeType = ShapeType.Circle;
         
         [SerializeField]
         private int _polygon = 6;

@@ -8,7 +8,7 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR
 
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
@@ -247,6 +247,23 @@ float CalculateCrossAlpha(float2 uv, float strength, float width)
     return step(min(p.x, p.y), width);
 }
 
+float CalculatePolarAlpha(float2 uv, float strength, int numSides, float value)
+{
+    float2 delta = uv - float2(0.5, 0.5);
+    delta *= (1 - strength) * 2;
+    const float len = length(delta) * 2;
+    const float atan = atan2(delta.y, delta.x);
+
+    int mode = (int)value;
+
+    float f = cos(atan * numSides) * (mode == 0)
+        + abs(cos(atan * numSides)) * (mode == 1)
+        + (abs(cos(atan * (numSides - 0.5))) * 0.5 + 0.3) * (mode == 2)
+        + (abs(cos(atan * 12) * sin(atan * numSides)) * 0.8 + 0.1) * (mode == 3);
+    
+    return 1.-smoothstep(f, f + 0.02, len);
+}
+
 float CalculateShapeAlpha(float2 uv, float strength, int intValue, float value)
 {
 #ifdef _SHAPE_CIRCLE
@@ -272,7 +289,10 @@ float CalculateShapeAlpha(float2 uv, float strength, int intValue, float value)
 #elif _SHAPE_RING
 
     return CalculateRingAlpha(uv, value);
-    
+
+#elif _SHAPE_POLAR
+
+    return CalculatePolarAlpha(uv, strength, intValue, value);
 #else
 
 #endif
