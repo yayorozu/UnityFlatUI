@@ -2,7 +2,7 @@
 {
 	Properties
 	{
-		[KeywordEnum(CIRCLE, POLYGON, ROUND_STAR, STAR, HEART, CROSS, RING, POLAR, SUPERELLIPSE)]
+		[KeywordEnum(CIRCLE, POLYGON, ROUND_STAR, STAR, HEART, CROSS, RING, POLAR, SUPERELLIPSE, ARROW)]
 		_SHAPE("Shape", Float) = 0
 		
 		_StencilComp("Stencil Comparison", Float) = 8
@@ -54,7 +54,7 @@
 			struct appdata
 			{
                 float4 vertex   : POSITION;
-                float4 color    : COLOR;
+                half4 color    : COLOR;
                 float4 uv : TEXCOORD0;
                 float4 uv1 : TEXCOORD1;
 			};

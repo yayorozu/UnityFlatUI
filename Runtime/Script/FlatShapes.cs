@@ -25,16 +25,14 @@ namespace Yorozu.FlatUI
             /// スーパー楕円
             /// </summary>
             Superellipse,
+            Arrow,
         }
         
         [SerializeField]
         private ShapeType _shapeType = ShapeType.Circle;
         
         [SerializeField]
-        private int _polygon = 6;
-
-        [SerializeField]
-        private float _floatValue;
+        private Vector4 _floatValue;
         
         [SerializeField, Range(0, 0.25f)]
         private float _outlineWidth;
@@ -48,13 +46,16 @@ namespace Yorozu.FlatUI
             var vertexList = new List<UIVertex>();
             vh.GetUIVertexStream(vertexList);
 
-            var intValue = _polygon / 20f;
-            var uv1Param = new Vector4(_outlineWidth, _outlineColor.r, _outlineColor.g, _outlineColor.b);
+            var uv1Param = _floatValue;
+            // w は int で使う
+            uv1Param.w /= 50f;
+
+            var colorFloat = ColorToFloat(_outlineColor);
             for (var i = 0; i < vertexList.Count; i++)
             {
                 var vertex = vertexList[i];
-                vertex.uv0.z = intValue;
-                vertex.uv0.w = _floatValue;
+                vertex.uv0.z = _outlineWidth;
+                vertex.uv0.w = colorFloat;
                 vertex.uv1 = uv1Param;
                 vertexList[i] = vertex;
             }

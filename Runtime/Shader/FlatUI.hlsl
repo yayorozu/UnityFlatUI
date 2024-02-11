@@ -8,7 +8,7 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW
 
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
@@ -274,7 +274,7 @@ float CalculateSuperEllipseAlpha(float2 uv, float blur, float value)
     const float _A = 0.4;
     const float _B = 0.4;
     const float _N = value;
-    const float _Blur = blur / 2;
+    const float _Blur = blur;
 
     const float a = fastPow(abs((uv.x - 0.5) / _A), _N) + fastPow(abs((uv.y - 0.5) / _B), _N);
 
@@ -290,9 +290,42 @@ float CalculateSuperEllipseAlpha(float2 uv, float blur, float value)
     return 1 / fastPow(a, 10 * (1 - _Blur));
 }
 
-float CalculateShapeAlpha(float2 uv, float strength, float intValueBase, float value)
+// 三角形の内側かどうか
+bool isPointInsideTriangle(half2 p, half2 v0, half2 v1, half2 v2)
 {
-    int intValue = (int)(intValueBase * 20);
+    const float denominator = ((v1.y - v2.y) * (v0.x - v2.x) + (v2.x - v1.x) * (v0.y - v2.y));
+    const float lambda1 = ((v1.y - v2.y) * (p.x - v2.x) + (v2.x - v1.x) * (p.y - v2.y)) / denominator;
+    const float lambda2 = ((v2.y - v0.y) * (p.x - v2.x) + (v0.x - v2.x) * (p.y - v2.y)) / denominator;
+    const float lambda3 = 1.0 - lambda1 - lambda2;
+    return (lambda1 >= 0.0 && lambda1 <= 1.0 && lambda2 >= 0.0 && lambda2 <= 1.0 && lambda3 >= 0.0 && lambda3 <= 1.0);
+}
+
+// 矢印を描画する
+float CalculateArrowAlpha(float2 uv, float strength, float arrowWidth, float arrowLineWidth)
+{
+    float rate = (1 - strength * 2);
+    half2 vertex1 = half2(0, 0.5);
+    half2 vertex2 = half2(arrowWidth, 1);
+    half2 vertex3 = half2(arrowWidth, 0);
+    const half2 center = (vertex1 + vertex2 + vertex3) / 3;
+
+    vertex1 -= (vertex1 - center) * rate;
+    vertex2 -= (vertex2 - center) * rate; 
+    vertex3 -= (vertex3 - center) * rate;
+
+    arrowLineWidth *= strength * 2;
+    
+    const bool isInsideTriangle = isPointInsideTriangle(uv, vertex1, vertex2, vertex3);
+
+    return isInsideTriangle ||
+        (abs(uv.y - 0.5) < arrowLineWidth && uv.x >= arrowWidth - 0.1 && uv.x <= 1 - rate / 10)
+    ? 1 : 0;
+}
+
+float CalculateShapeAlpha(float2 uv, float strength, float4 params)
+{
+    int intValue = (int)(params.w * 50);
+    float value = params.x;
 #ifdef _SHAPE_CIRCLE
     
     return CalculateCircleAlpha(uv, strength);
@@ -322,21 +355,24 @@ float CalculateShapeAlpha(float2 uv, float strength, float intValueBase, float v
     return CalculatePolarAlpha(uv, strength, intValue, value);
 #elif _SHAPE_SUPERELLIPSE
 
-    return CalculateSuperEllipseAlpha(uv, intValueBase, value);
+    return CalculateSuperEllipseAlpha(uv, params.y, value);
+#elif _SHAPE_ARROW
+    
+    return CalculateArrowAlpha(uv, strength, params.x, params.y);
 #endif
     return 0;
 }
 
 half4 Shapes(float4 baseColor, float4 uv0, float4 uv1)
 {
-    half outlineWidth = uv1.x;
-    half3 outlineColor = uv1.yzw;
+    const half outlineWidth = uv0.z;
+    const half3 outlineColor = FloatToColor(uv0.w).rgb;
 
-    float outlineStrength = 0.5;
-    float strength = 0.5 - outlineWidth;
+    const float outlineStrength = 0.5;
+    const float strength = 0.5 - outlineWidth;
 
-    float outlineAlpha = CalculateShapeAlpha(uv0.xy, outlineStrength, uv0.z, uv0.w);
-    float alpha = CalculateShapeAlpha(uv0.xy, strength, uv0.z, uv0.w);
+    const float outlineAlpha = CalculateShapeAlpha(uv0.xy, outlineStrength, uv1);
+    const float alpha = CalculateShapeAlpha(uv0.xy, strength, uv1);
 
     baseColor.a *= outlineAlpha;
     baseColor.rgb = lerp(baseColor.rgb, outlineColor, (1 - alpha) * (1 - step(outlineWidth, 0)));
