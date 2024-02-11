@@ -10,21 +10,21 @@ namespace Yorozu.FlatUI
         public enum Type
         {
             None,
-            OutLine,
+            Outline,
             Separate,
         }
         
         protected override string GetMaterialName()
         {
-            return _type switch
-            {
-                Type.OutLine => "FlatRoundedCornerOutline",
-                Type.None => "FlatRoundedCorner",
-                Type.Separate => "FlatRoundedCornerSeparate",
-                _ => throw new ArgumentOutOfRangeException()
-            };
+            return $"FlatCorner{_cornerShape}{_type}";
         }
 
+        private enum CornerShape
+        {
+            Rounded,
+            Cut,
+        }
+        
         [Flags]
         private enum CurveFlags
         {
@@ -33,6 +33,9 @@ namespace Yorozu.FlatUI
             LeftBottom = 1 << 2,
             RightBottom = 1 << 3,
         }
+        
+        [SerializeField]
+        private CornerShape _cornerShape;
 
         [SerializeField]
         private CurveFlags _flags =
@@ -65,7 +68,7 @@ namespace Yorozu.FlatUI
 
             var flagsClamp = (int)_flags / 15f;
             var uv1Param = new Vector4(_radius, flagsClamp, color);
-            if (_type == Type.OutLine)
+            if (_type == Type.Outline)
                 uv1Param.w = _outline;
             if (_type == Type.Separate)
                 uv1Param.w = _separate;

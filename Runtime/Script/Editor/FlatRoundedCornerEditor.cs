@@ -7,6 +7,7 @@ namespace Yorozu.FlatUI.Tool
     {
         private SerializedProperty _mcolor;
         private SerializedProperty _raycast;
+        private SerializedProperty _cornerShape;
         private SerializedProperty _flags;
         private SerializedProperty _radius;
         private SerializedProperty _type;
@@ -18,6 +19,7 @@ namespace Yorozu.FlatUI.Tool
         {
             _mcolor = serializedObject.FindProperty("m_Color");
             _raycast = serializedObject.FindProperty("m_RaycastTarget");
+            _cornerShape = serializedObject.FindProperty("_cornerShape");
             _flags = serializedObject.FindProperty("_flags");
             _radius = serializedObject.FindProperty("_radius");
             _type = serializedObject.FindProperty("_type");
@@ -31,10 +33,11 @@ namespace Yorozu.FlatUI.Tool
             serializedObject.Update();
             EditorGUILayout.PropertyField(_mcolor);
             EditorGUILayout.PropertyField(_raycast);
+            EditorGUILayout.PropertyField(_cornerShape);
             EditorGUILayout.PropertyField(_flags);
             EditorGUILayout.PropertyField(_radius);
             EditorGUILayout.PropertyField(_type);
-            if (_type.intValue == (int) FlatRoundedCorner.Type.OutLine)
+            if (_type.intValue == (int) FlatRoundedCorner.Type.Outline)
             {
                 EditorGUILayout.PropertyField(_outline);
                 EditorGUILayout.PropertyField(_color);

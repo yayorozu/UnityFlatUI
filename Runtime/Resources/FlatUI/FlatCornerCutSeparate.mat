@@ -7,13 +7,15 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: FlatRoundedCorner
+  m_Name: FlatCornerCutSeparate
   m_Shader: {fileID: 4800000, guid: 9b449c808ff8240b5ac99aca26407405, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _TYPE_DEFAULT
-  m_InvalidKeywords: []
+  - _ROUND_SHAPE_CUT
+  - _TYPE_SEPARATE
+  m_InvalidKeywords:
+  - _OUTLINE_ENABLE
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -74,9 +76,10 @@ Material:
     - _Height: 100
     - _Metallic: 0
     - _Mode: 0
-    - _OUTLINE: 0
+    - _OUTLINE: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _ROUND_SHAPE: 1
     - _Radius: 0.322
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -86,7 +89,7 @@ Material:
     - _StencilOp: 0
     - _StencilReadMask: 255
     - _StencilWriteMask: 255
-    - _TYPE: 0
+    - _TYPE: 2
     - _UVSec: 0
     - _UseUIAlphaClip: 0
     - _Width: 50

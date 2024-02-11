@@ -4,6 +4,9 @@
 	{
 		[KeywordEnum(DEFAULT, OUTLINE, SEPARATE)]
 		_TYPE("Type", Float) = 0
+		[KeywordEnum(ROUND, CUT)]
+		_ROUND_SHAPE("Cut Shape", Float) = 0
+		
 		_StencilComp("Stencil Comparison", Float) = 8
 		_Stencil("Stencil ID", Float) = 0
 		_StencilOp("Stencil Operation", Float) = 0

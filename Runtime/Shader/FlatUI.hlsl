@@ -8,7 +8,31 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
+#pragma shader_feature _ROUND_SHAPE_ROUND _ROUND_SHAPE_CUT
+
 #pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW
+
+// 三角形の内側かどうか
+bool isPointInsideTriangle(half2 p, half2 v0, half2 v1, half2 v2)
+{
+    const float denominator = ((v1.y - v2.y) * (v0.x - v2.x) + (v2.x - v1.x) * (v0.y - v2.y));
+    const float lambda1 = ((v1.y - v2.y) * (p.x - v2.x) + (v2.x - v1.x) * (p.y - v2.y)) / denominator;
+    const float lambda2 = ((v2.y - v0.y) * (p.x - v2.x) + (v0.x - v2.x) * (p.y - v2.y)) / denominator;
+    const float lambda3 = 1.0 - lambda1 - lambda2;
+    return (lambda1 >= 0.0 && lambda1 <= 1.0 && lambda2 >= 0.0 && lambda2 <= 1.0 && lambda3 >= 0.0 && lambda3 <= 1.0);
+}
+
+half4 FloatToColor(float value)
+{
+    half3 outlineColor = half3(0, 0, 0);
+    half outlineColorData = value;
+    outlineColor.r = frac(value) * 10;
+    outlineColor.g = floor(outlineColorData) % 1000 / 100;
+    outlineColorData = floor(outlineColorData / 1000);
+    outlineColor.b = outlineColorData / 100;
+
+    return half4(outlineColor, 1);
+}
 
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
@@ -53,16 +77,46 @@ half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, 
     return lerp(baseColor, targetColor, v);
 }
 
-half4 FloatToColor(float value)
+half4 CutCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
-    half3 outlineColor = half3(0, 0, 0);
-    half outlineColorData = value;
-    outlineColor.r = frac(value) * 10;
-    outlineColor.g = floor(outlineColorData) % 1000 / 100;
-    outlineColorData = floor(outlineColorData / 1000);
-    outlineColor.b = outlineColorData / 100;
+    float r = min(width, height) * radius;
+    float2 XY = float2(uv.x * width, uv.y * height);
 
-    return half4(outlineColor, 1);
+    float isNotCorner = 
+        IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
+        + IS(IS_SMALL(r, XY.y) + IS_SMALL(XY.y, (height - r)) - 1); // r < y < 1-r
+
+    // LeftTop
+    float lt = (flag & 1 << 0) == 1 << 0 ?
+        isPointInsideTriangle(XY, half2(0, height - r), half2(r, height), half2(r, height - r)) :
+        XY.x <= r && XY.y >= height - r
+    ;
+    // RightTop
+    float rt = (flag & 1 << 1) == 1 << 1 ?
+        isPointInsideTriangle(XY, half2(width - r, height - r), half2(width - r, height), half2(width, height - r)) :
+        XY.x >= width - r && XY.y >= height - r
+    ;
+    // LeftBottom
+    float lb = (flag & 1 << 2) == 1 << 2 ?
+        isPointInsideTriangle(XY, half2(0, r), half2(r, 0), half2(r, r)) :
+        XY.x <= r && XY.y <= r
+    ;
+    // RightBottom
+    float rb = (flag & 1 << 3) == 1 << 3 ?
+        isPointInsideTriangle(XY, half2(width, r), half2(width - r, 0), half2(width - r, r)) :
+        XY.x >= width - r && XY.y <= r
+    ;
+    
+    return lerp(baseColor, targetColor, saturate(lt + rt + lb + rb + IS(isNotCorner)));
+}
+
+half4 Corner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
+{
+#ifdef _ROUND_SHAPE_ROUND
+    return RoundedCorner(uv, baseColor, targetColor, radius, width, height, flag);
+#elif _ROUND_SHAPE_CUT
+    return CutCorner(uv, baseColor, targetColor, radius, width, height, flag);
+#endif
 }
 
 half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
@@ -77,7 +131,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
     half outline = uv1.w;
     half4 outlineColor = FloatToColor(uv1.z);
     
-    half4 color = RoundedCorner(uv.xy, half4(0, 0, 0, 0), outlineColor, radius, width, height, flag);
+    half4 color = Corner(uv.xy, half4(0, 0, 0, 0), outlineColor, radius, width, height, flag);
 
     // Outlineの最低幅
     float r = min(width, height) * outline;
@@ -89,7 +143,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
     half outlineX = (r / width) / (1 + r / width);
     half outlineY = (r / height) / (1 + r / height);
     // Inner outline
-    color = RoundedCorner(newUV, color, baseColor, radius, width - width * outline * 2, height - height * outline * 2, flag);
+    color = Corner(newUV, color, baseColor, radius, width - width * outline * 2, height - height * outline * 2, flag);
 
     color.rgb = lerp(
         color.rgb, 
@@ -104,7 +158,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 
 #elif _TYPE_SEPARATE
 				
-    half4 color = RoundedCorner(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
+    half4 color = Corner(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
 
     half ratio = uv1.w;
 
@@ -120,7 +174,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 
 #else
 
-    return RoundedCorner(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
+    return Corner(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
 
 #endif
 }
@@ -296,16 +350,6 @@ float CalculateSuperEllipseAlpha(float2 uv, float blur, float value)
     }
     
     return 1 / fastPow(a, 10 * (1 - _Blur));
-}
-
-// 三角形の内側かどうか
-bool isPointInsideTriangle(half2 p, half2 v0, half2 v1, half2 v2)
-{
-    const float denominator = ((v1.y - v2.y) * (v0.x - v2.x) + (v2.x - v1.x) * (v0.y - v2.y));
-    const float lambda1 = ((v1.y - v2.y) * (p.x - v2.x) + (v2.x - v1.x) * (p.y - v2.y)) / denominator;
-    const float lambda2 = ((v2.y - v0.y) * (p.x - v2.x) + (v0.x - v2.x) * (p.y - v2.y)) / denominator;
-    const float lambda3 = 1.0 - lambda1 - lambda2;
-    return (lambda1 >= 0.0 && lambda1 <= 1.0 && lambda2 >= 0.0 && lambda2 <= 1.0 && lambda3 >= 0.0 && lambda3 <= 1.0);
 }
 
 // 矢印を描画する
