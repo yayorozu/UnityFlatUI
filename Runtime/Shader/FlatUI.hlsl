@@ -318,7 +318,7 @@ float CalculateArrowAlpha(float2 uv, float strength, float arrowWidth, float arr
     const bool isInsideTriangle = isPointInsideTriangle(uv, vertex1, vertex2, vertex3);
 
     return isInsideTriangle ||
-        (abs(uv.y - 0.5) < arrowLineWidth && uv.x >= arrowWidth - 0.1 && uv.x <= 1 - rate / 10)
+        (abs(uv.y - 0.5) < arrowLineWidth && uv.x >= arrowWidth - arrowWidth * rate && uv.x <= 1 - rate / 10)
     ? 1 : 0;
 }
 
