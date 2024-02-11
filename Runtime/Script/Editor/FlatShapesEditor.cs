@@ -90,6 +90,7 @@ namespace Yorozu.FlatUI.Tool
                 FlatShapes.ShapeType.Polygon or
                 FlatShapes.ShapeType.Star or
                 FlatShapes.ShapeType.RoundStar or
+                FlatShapes.ShapeType.Cross or
                 FlatShapes.ShapeType.Polar or
                 FlatShapes.ShapeType.Arrow
                )

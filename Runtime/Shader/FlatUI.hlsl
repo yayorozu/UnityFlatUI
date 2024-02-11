@@ -244,7 +244,15 @@ float CalculateCrossAlpha(float2 uv, float strength, float width)
 {
     float2 p = abs(uv - 0.5);
     p *= (1 - strength) * 2;
-    return step(min(p.x, p.y), width);
+    const float rate = (1 - strength * 2) * width / 1.4;
+
+    const float round = uv.x <= 1 - rate
+                        && uv.y <= 1 - rate
+                        && uv.x >= rate
+                        && uv.y >= rate
+                            ? 1 : 0;
+    
+    return step(2, step(min(p.x, p.y), width) + round);
 }
 
 float CalculatePolarAlpha(float2 uv, float strength, int numSides, float value)
