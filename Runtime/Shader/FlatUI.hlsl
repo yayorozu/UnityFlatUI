@@ -8,7 +8,7 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE
 
 half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
 {
@@ -264,8 +264,35 @@ float CalculatePolarAlpha(float2 uv, float strength, int numSides, float value)
     return 1.-smoothstep(f, f + 0.02, len);
 }
 
-float CalculateShapeAlpha(float2 uv, float strength, int intValue, float value)
+float fastPow(float x, float p)
 {
+    return exp(p * log(x));
+}
+
+float CalculateSuperEllipseAlpha(float2 uv, float blur, float value)
+{
+    const float _A = 0.4;
+    const float _B = 0.4;
+    const float _N = value;
+    const float _Blur = blur / 2;
+
+    const float a = fastPow(abs((uv.x - 0.5) / _A), _N) + fastPow(abs((uv.y - 0.5) / _B), _N);
+
+    if (a < 1)
+    {
+        return 1;
+    }
+    if (_Blur <= 0)
+    {
+        return 0;
+    }
+    
+    return 1 / fastPow(a, 10 * (1 - _Blur));
+}
+
+float CalculateShapeAlpha(float2 uv, float strength, float intValueBase, float value)
+{
+    int intValue = (int)(intValueBase * 20);
 #ifdef _SHAPE_CIRCLE
     
     return CalculateCircleAlpha(uv, strength);
@@ -293,8 +320,9 @@ float CalculateShapeAlpha(float2 uv, float strength, int intValue, float value)
 #elif _SHAPE_POLAR
 
     return CalculatePolarAlpha(uv, strength, intValue, value);
-#else
+#elif _SHAPE_SUPERELLIPSE
 
+    return CalculateSuperEllipseAlpha(uv, intValueBase, value);
 #endif
     return 0;
 }
@@ -307,9 +335,8 @@ half4 Shapes(float4 baseColor, float4 uv0, float4 uv1)
     float outlineStrength = 0.5;
     float strength = 0.5 - outlineWidth;
 
-    int intValue = (int)(uv0.z * 10);
-    float outlineAlpha = CalculateShapeAlpha(uv0.xy, outlineStrength, intValue, uv0.w);
-    float alpha = CalculateShapeAlpha(uv0.xy, strength, intValue, uv0.w);
+    float outlineAlpha = CalculateShapeAlpha(uv0.xy, outlineStrength, uv0.z, uv0.w);
+    float alpha = CalculateShapeAlpha(uv0.xy, strength, uv0.z, uv0.w);
 
     baseColor.a *= outlineAlpha;
     baseColor.rgb = lerp(baseColor.rgb, outlineColor, (1 - alpha) * (1 - step(outlineWidth, 0)));

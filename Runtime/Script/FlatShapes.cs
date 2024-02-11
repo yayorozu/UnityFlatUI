@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Yorozu.FlatUI
@@ -22,6 +21,10 @@ namespace Yorozu.FlatUI
             Cross,
             Ring,
             Polar,
+            /// <summary>
+            /// スーパー楕円
+            /// </summary>
+            Superellipse,
         }
         
         [SerializeField]
@@ -45,7 +48,7 @@ namespace Yorozu.FlatUI
             var vertexList = new List<UIVertex>();
             vh.GetUIVertexStream(vertexList);
 
-            var intValue = _polygon / 10f;
+            var intValue = _polygon / 20f;
             var uv1Param = new Vector4(_outlineWidth, _outlineColor.r, _outlineColor.g, _outlineColor.b);
             for (var i = 0; i < vertexList.Count; i++)
             {

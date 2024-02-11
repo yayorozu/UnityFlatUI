@@ -40,27 +40,29 @@ namespace Yorozu.FlatUI.Tool
                 FlatShapes.ShapeType.Polygon => EditorGUILayout.IntSlider(_polygon.displayName, _polygon.intValue, 3, 12),
                 FlatShapes.ShapeType.Polar => EditorGUILayout.IntSlider(_polygon.displayName, _polygon.intValue, 2, 20),
                 FlatShapes.ShapeType.Star or FlatShapes.ShapeType.RoundStar => EditorGUILayout.IntSlider(_polygon.displayName, _polygon.intValue, 5, 12),
+                FlatShapes.ShapeType.Superellipse => EditorGUILayout.IntSlider("Blur", _polygon.intValue, 0, 10),
                 _ => _polygon.intValue
             };
 
-            if (shape is FlatShapes.ShapeType.Polygon)
+            switch (shape)
             {
-                _polygon.intValue = EditorGUILayout.IntSlider(_polygon.displayName, _polygon.intValue, 3, 12);
+                case FlatShapes.ShapeType.Cross:
+                    _floatValue.floatValue = EditorGUILayout.Slider(_floatValue.displayName, _floatValue.floatValue, 0.01f, 0.3f);
+                    break;
+                case FlatShapes.ShapeType.RoundStar or FlatShapes.ShapeType.Ring:
+                    _floatValue.floatValue = EditorGUILayout.Slider(_floatValue.displayName, _floatValue.floatValue, 0.01f, 0.99f);
+                    break;
+                case FlatShapes.ShapeType.Superellipse:
+                    _floatValue.floatValue = EditorGUILayout.Slider(_floatValue.displayName, _floatValue.floatValue, 0.2f, 10f);
+                    break;
+                case FlatShapes.ShapeType.Polar:
+                {
+                    var v = (int)_floatValue.floatValue;
+                    _floatValue.floatValue = (float)EditorGUILayout.IntSlider("Mode", v, 0, 3);
+                    break;
+                }
             }
 
-            if (shape is FlatShapes.ShapeType.Cross)
-            {
-                _floatValue.floatValue = EditorGUILayout.Slider(_floatValue.displayName, _floatValue.floatValue, 0.01f, 0.3f);
-            }
-            if (shape is FlatShapes.ShapeType.RoundStar or FlatShapes.ShapeType.Ring)
-            {
-                _floatValue.floatValue = EditorGUILayout.Slider(_floatValue.displayName, _floatValue.floatValue, 0.01f, 0.99f);
-            }
-            if (shape is FlatShapes.ShapeType.Polar)
-            {
-                var v = (int)_floatValue.floatValue;
-                _floatValue.floatValue = (float)EditorGUILayout.IntSlider("Mode", v, 0, 3);
-            }
 
             if (shape is FlatShapes.ShapeType.Circle or
                 FlatShapes.ShapeType.Heart or
