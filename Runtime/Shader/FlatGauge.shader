@@ -2,6 +2,9 @@
 {
 	Properties
 	{
+		[KeywordEnum(CIRCLE, HORIZONTAL, VERTICAL)]
+		_TYPE("Type", Float) = 0
+		
 		_StencilComp("Stencil Comparison", Float) = 8
 		_Stencil("Stencil ID", Float) = 0
 		_StencilOp("Stencil Operation", Float) = 0
@@ -83,13 +86,11 @@
 
 			half4 frag(v2f i) : SV_Target
 			{
-				half4 color = CircleGaugeFragmentAlpha(i.color, i.uv, i.texcoord1);
+				half4 color = GaugeColor(i.color, i.uv, i.texcoord1);
 				color.a *= i.color.a * UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
 				return color;
 			}
 			ENDCG
 		}
 	}
-	
-	CustomEditor "Yorozu.FlatUI.Tool.FlatShaderGUI"
 }

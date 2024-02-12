@@ -8,6 +8,8 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
+#pragma shader_feature _TYPE_CIRCLE _TYPE_HORIZONTAL _TYPE_VERTICAL
+
 #pragma shader_feature _ROUND_SHAPE_ROUND _ROUND_SHAPE_CUT
 
 #pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW
@@ -53,28 +55,28 @@ half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, 
     d_rt *= (flag & 1 << 3) == 1 << 3;
     d_lb *= (flag & 1 << 0) == 1 << 0;
     d_rb *= (flag & 1 << 1) == 1 << 1;
-				
-    float isNotCorner = 
+
+    const float isNotCorner = 
         IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
         + IS(IS_SMALL(r, XY.y) + IS_SMALL(XY.y, (height - r)) - 1); // r < y < 1-r
-				
-    float left = lerp(
+
+    const float left = lerp(
         lerp(1, 0, IS(d_lt - r * r)),
         lerp(1, 0, IS(d_lb - r * r)),
         IS(uv.y > 0.5)
     );
-    float right = lerp(
+    const float right = lerp(
         lerp(1, 0, IS(d_rt - r * r)),
         lerp(1, 0, IS(d_rb - r * r)),
         IS(uv.y > 0.5)
     );
-    half v = lerp( 
+    const half final = lerp( 
         lerp(left, right, IS(uv.x > 0.5)),
-        1,
+        uv.y >= 0 && uv.y <= 1 && uv.x >= 0 && uv.x <= 1,
         IS(isNotCorner) // r < x < 1-r && r < y < 1-r
     );
 
-    return lerp(baseColor, targetColor, v);
+    return lerp(baseColor, targetColor, final);
 }
 
 half4 CutCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
@@ -188,7 +190,7 @@ float CalculateRingAlpha(float2 uv, float width, float outerStart = 1)
     return  inner - outer;
 }
 
-half4 CircleGaugeFragmentAlpha(half4 baseColor, float4 uv0, float4 uv1)
+half4 GaugeCircle(half4 baseColor, float4 uv0, float4 uv1)
 {
     float2 pos = (uv0.xy - float2(0.5, 0.5)) * 2.0;
     
@@ -203,9 +205,9 @@ half4 CircleGaugeFragmentAlpha(half4 baseColor, float4 uv0, float4 uv1)
 
     float value1 = uv0.z;
     float value2 = uv0.w;
-    float width = 1 - frac(value1) * 10;
+    float reverse = frac(value1) * 10;
     float amount = floor(value1) / 100;
-    float reverse = frac(value2) * 10;
+    float width = 1 - frac(value2) * 10;
     float maxLength = floor(value2) / 100;
     if (reverse > 0) {
         angle = 1 - angle;
@@ -227,6 +229,56 @@ half4 CircleGaugeFragmentAlpha(half4 baseColor, float4 uv0, float4 uv1)
     );
 
     return color;
+}
+
+// 直線
+half4 GaugeLine(half4 baseColor, float4 uv0, float4 uv1)
+{
+    const float value1 = uv0.z;
+    const float reverse = frac(value1) * 10;
+    const float amount = floor(value1) / 100;
+
+    half frameWidth = uv1.z;
+    half3 frameColor = FloatToColor(uv1.w).rgb;
+    const half3 backColor = FloatToColor(uv0.w).rgb;
+
+    float width = uv1.x;
+    float height = uv1.y;
+    const int flag = 15;
+    const float radius = 0.5;
+
+    // Outlineの最低幅
+    float r = min(width, height) * frameWidth;
+
+    // 内部用のUV
+    const half2 innerUV = half2(lerp(-r / width, 1 + r / width, uv0.x), lerp(-r / height, 1 + r / height, uv0.y));
+
+    // Inner
+    half4 innerColor = RoundedCorner(innerUV, 0, baseColor, radius, width, height, flag);
+
+    // frame
+    half4 fColor = RoundedCorner(uv0.xy, 0, baseColor, radius, width, height, flag);
+
+#if _TYPE_HORIZONTAL
+    int index = 0;
+#else
+    int index = 1;
+#endif
+    float amountLerp = reverse > 0 ? uv0[index] > 1 - amount : uv0[index] < amount;
+    innerColor.rgb = lerp(backColor, innerColor.rgb, amountLerp);
+    fColor.rgb = lerp(frameColor, innerColor.rgb, innerColor.a);
+
+    return fColor;
+}
+
+half4 GaugeColor(half4 baseColor, float4 uv0, float4 uv1)
+{
+#if _TYPE_CIRCLE
+    return GaugeCircle(baseColor, uv0, uv1);
+#elif _TYPE_HORIZONTAL || _TYPE_VERTICAL
+    return GaugeLine(baseColor, uv0, uv1);
+#endif
+    return 0;
 }
 
 float2 UVtoPolarCoordinates(float2 uv, float strength)
