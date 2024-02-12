@@ -3,6 +3,7 @@ using UnityEditor;
 
 namespace Yorozu.FlatUI.Tool
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(FlatGauge))]
     public class FlatGaugeEditor : Editor
     {
@@ -45,7 +46,6 @@ namespace Yorozu.FlatUI.Tool
             
             EditorGUILayout.PropertyField(_frameColor);
             EditorGUILayout.PropertyField(_frameWidth);
-            EditorGUILayout.PropertyField(_backColor);
             
             var type = (FlatGauge.GaugeType)_gaugeType.intValue;
             switch (type)
@@ -56,8 +56,8 @@ namespace Yorozu.FlatUI.Tool
                     EditorGUILayout.PropertyField(_length);
                     break;
                 case FlatGauge.GaugeType.Horizontal:
-                    break;
                 case FlatGauge.GaugeType.Vertical:
+                    EditorGUILayout.PropertyField(_backColor);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

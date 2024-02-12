@@ -2,6 +2,7 @@
 
 namespace Yorozu.FlatUI.Tool
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(FlatShapes))]
     public class FlatShapesEditor : Editor
     {
