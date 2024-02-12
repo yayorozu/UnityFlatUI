@@ -36,36 +36,37 @@ half4 FloatToColor(float value)
     return half4(outlineColor, 1);
 }
 
-half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
+// 角丸
+half RoundedCorner(float2 uv, half radius, half width, half height, int flag)
 {
     float r = min(width, height) * radius;
     float2 XY = float2(uv.x * width, uv.y * height);
 				
     // Calc Distance from each center of circle
     // LeftTop, Center:(r, r)
-    float d_lt = (XY.x - r) * (XY.x - r) + (XY.y - r) * (XY.y - r);
+    half d_lt = (XY.x - r) * (XY.x - r) + (XY.y - r) * (XY.y - r);
     // LeftBot, Center:(r, h - r)
-    float d_lb = (XY.x - r) * (XY.x - r) + (XY.y- (height - r)) * (XY.y - (height - r));
+    half d_lb = (XY.x - r) * (XY.x - r) + (XY.y- (height - r)) * (XY.y - (height - r));
     // RightTop, Center:(w - r, r)
-    float d_rt = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - r) * (XY.y - r);
+    half d_rt = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - r) * (XY.y - r);
     // RightBot, Center:(w - r, h - r)
-    float d_rb = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - (height - r)) * (XY.y - (height - r));
+    half d_rb = (XY.x - (width - r)) * (XY.x - (width - r)) + (XY.y - (height - r)) * (XY.y - (height - r));
 				
     d_lt *= (flag & 1 << 2) == 1 << 2;
     d_rt *= (flag & 1 << 3) == 1 << 3;
     d_lb *= (flag & 1 << 0) == 1 << 0;
     d_rb *= (flag & 1 << 1) == 1 << 1;
 
-    const float isNotCorner = 
+    const half isNotCorner = 
         IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
         + IS(IS_SMALL(r, XY.y) + IS_SMALL(XY.y, (height - r)) - 1); // r < y < 1-r
 
-    const float left = lerp(
+    const half left = lerp(
         lerp(1, 0, IS(d_lt - r * r)),
         lerp(1, 0, IS(d_lb - r * r)),
         IS(uv.y > 0.5)
     );
-    const float right = lerp(
+    const half right = lerp(
         lerp(1, 0, IS(d_rt - r * r)),
         lerp(1, 0, IS(d_rb - r * r)),
         IS(uv.y > 0.5)
@@ -76,48 +77,55 @@ half4 RoundedCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, 
         IS(isNotCorner) // r < x < 1-r && r < y < 1-r
     );
 
-    return lerp(baseColor, targetColor, final);
+    return final;
 }
 
-half4 CutCorner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
+// 角カット
+half CutCorner(float2 uv, half radius, half width, half height, int flag)
 {
-    float r = min(width, height) * radius;
-    float2 XY = float2(uv.x * width, uv.y * height);
+    half r = min(width, height) * radius;
+    half2 XY = float2(uv.x * width, uv.y * height);
 
-    float isNotCorner = 
+    half isNotCorner = 
         IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
         + IS(IS_SMALL(r, XY.y) + IS_SMALL(XY.y, (height - r)) - 1); // r < y < 1-r
 
     // LeftTop
-    float lt = (flag & 1 << 0) == 1 << 0 ?
+    half lt = (flag & 1 << 0) == 1 << 0 ?
         isPointInsideTriangle(XY, half2(0, height - r), half2(r, height), half2(r, height - r)) :
         XY.x <= r && XY.y >= height - r
     ;
     // RightTop
-    float rt = (flag & 1 << 1) == 1 << 1 ?
+    half rt = (flag & 1 << 1) == 1 << 1 ?
         isPointInsideTriangle(XY, half2(width - r, height - r), half2(width - r, height), half2(width, height - r)) :
         XY.x >= width - r && XY.y >= height - r
     ;
     // LeftBottom
-    float lb = (flag & 1 << 2) == 1 << 2 ?
+    half lb = (flag & 1 << 2) == 1 << 2 ?
         isPointInsideTriangle(XY, half2(0, r), half2(r, 0), half2(r, r)) :
         XY.x <= r && XY.y <= r
     ;
     // RightBottom
-    float rb = (flag & 1 << 3) == 1 << 3 ?
+    half rb = (flag & 1 << 3) == 1 << 3 ?
         isPointInsideTriangle(XY, half2(width, r), half2(width - r, 0), half2(width - r, r)) :
         XY.x >= width - r && XY.y <= r
     ;
-    
-    return lerp(baseColor, targetColor, saturate(lt + rt + lb + rb + IS(isNotCorner)));
+
+    half body = lerp( 
+        0,
+        uv.y >= 0 && uv.y <= 1 && uv.x >= 0 && uv.x <= 1,
+        IS(isNotCorner)
+    );
+ 
+    return saturate(lt + rt + lb + rb + body);
 }
 
-half4 Corner(float2 uv, half4 baseColor, half4 targetColor, half radius, half width, half height, int flag)
+half Corner(float2 uv, half radius, half width, half height, int flag)
 {
 #ifdef _ROUND_SHAPE_ROUND
-    return RoundedCorner(uv, baseColor, targetColor, radius, width, height, flag);
+    return RoundedCorner(uv, radius, width, height, flag);
 #elif _ROUND_SHAPE_CUT
-    return CutCorner(uv, baseColor, targetColor, radius, width, height, flag);
+    return CutCorner(uv, radius, width, height, flag);
 #endif
 }
 
@@ -128,57 +136,32 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
 				
     half width = uv.z;
     half height = uv.w;
-				
+
+    baseColor.a = Corner(uv, radius, width, height, flag);
+
 #ifdef _TYPE_OUTLINE
     half outline = uv1.w;
     half4 outlineColor = FloatToColor(uv1.z);
     
-    half4 color = Corner(uv.xy, half4(0, 0, 0, 0), outlineColor, radius, width, height, flag);
-
     // Outlineの最低幅
     float r = min(width, height) * outline;
+    half2 newUV = half2(lerp(-r / width, 1 + r / width, uv.x), lerp(-r / height, 1 + r / height, uv.y));
 
-    half2 newUV = half2(
-        lerp(-r / width, 1 + r / width, uv.x), 
-        lerp(-r / height, 1 + r / height, uv.y) 
-    );
-    half outlineX = (r / width) / (1 + r / width);
-    half outlineY = (r / height) / (1 + r / height);
     // Inner outline
-    color = Corner(newUV, color, baseColor, radius, width - width * outline * 2, height - height * outline * 2, flag);
+    half innerAlpha = Corner(newUV, radius, width, height, flag);
 
-    color.rgb = lerp(
-        color.rgb, 
-        outlineColor,
-        saturate(
-            (frac(uv.x * (1 + outlineX)) < outlineX) + 
-            (frac(uv.y * (1 + outlineY)) < outlineY)
-        )
-    );
-
-    return color;
+    baseColor.rgb = lerp(outlineColor, baseColor.rgb, innerAlpha);
 
 #elif _TYPE_SEPARATE
-				
-    half4 color = Corner(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
 
     half ratio = uv1.w;
 
     half4 separateColor = FloatToColor(uv1.z);
 
-    color.rgb = lerp(
-        separateColor,
-        color.rgb, 
-        IS_SMALL(uv.y, ratio)
-    );
-
-    return color;
-
-#else
-
-    return Corner(uv, half4(0, 0, 0, 0), baseColor, radius, width, height, flag);
+    baseColor.rgb = lerp(separateColor, baseColor.rgb, IS_SMALL(uv.y, ratio));
 
 #endif
+    return baseColor;
 }
 
 float CalculateRingAlpha(float2 uv, float width, float outerStart = 1)
@@ -254,10 +237,10 @@ half4 GaugeLine(half4 baseColor, float4 uv0, float4 uv1)
     const half2 innerUV = half2(lerp(-r / width, 1 + r / width, uv0.x), lerp(-r / height, 1 + r / height, uv0.y));
 
     // Inner
-    half4 innerColor = RoundedCorner(innerUV, 0, baseColor, radius, width, height, flag);
+    half innerAlpha = RoundedCorner(innerUV, radius, width, height, flag);
 
     // frame
-    half4 fColor = RoundedCorner(uv0.xy, 0, baseColor, radius, width, height, flag);
+    half frameAlpha = RoundedCorner(uv0.xy, radius, width, height, flag);
 
 #if _TYPE_HORIZONTAL
     int index = 0;
@@ -265,10 +248,8 @@ half4 GaugeLine(half4 baseColor, float4 uv0, float4 uv1)
     int index = 1;
 #endif
     float amountLerp = reverse > 0 ? uv0[index] > 1 - amount : uv0[index] < amount;
-    innerColor.rgb = lerp(backColor, innerColor.rgb, amountLerp);
-    fColor.rgb = lerp(frameColor, innerColor.rgb, innerColor.a);
-
-    return fColor;
+    const half3 innerColor = lerp(backColor, baseColor.rgb, amountLerp);
+    return half4(lerp(frameColor, innerColor, innerAlpha), frameAlpha);
 }
 
 half4 GaugeColor(half4 baseColor, float4 uv0, float4 uv1)
