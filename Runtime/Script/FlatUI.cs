@@ -101,9 +101,13 @@ namespace Yorozu.FlatUI
 
         protected float ColorToFloat(Color color)
         {
-            return color.r / 10 +
-                Mathf.FloorToInt(color.g * 100) +
-                Mathf.FloorToInt(color.b * 100) * 1000;
+            var rgb = new Vector3Int(
+                Mathf.FloorToInt(color.r * 255f + 0.5f),
+                Mathf.FloorToInt(color.g * 255f + 0.5f),
+                Mathf.FloorToInt(color.b * 255f + 0.5f)
+            );
+            float packed = rgb.x * 65536 + rgb.y * 256 + rgb.z;
+            return packed / (256 * 256 * 256);
         }
         
     }

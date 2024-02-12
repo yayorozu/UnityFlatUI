@@ -24,16 +24,16 @@ bool isPointInsideTriangle(half2 p, half2 v0, half2 v1, half2 v2)
     return (lambda1 >= 0.0 && lambda1 <= 1.0 && lambda2 >= 0.0 && lambda2 <= 1.0 && lambda3 >= 0.0 && lambda3 <= 1.0);
 }
 
-half4 FloatToColor(float value)
+half4 FloatToColor(float packed)
 {
-    half3 outlineColor = half3(0, 0, 0);
-    half outlineColorData = value;
-    outlineColor.r = frac(value) * 10;
-    outlineColor.g = floor(outlineColorData) % 1000 / 100;
-    outlineColorData = floor(outlineColorData / 1000);
-    outlineColor.b = outlineColorData / 100;
+    packed *= 256 * 256 * 256;
+    half3 color = half3(0, 0, 0);
 
-    return half4(outlineColor, 1);
+    color.b = fmod(packed, 256);
+    packed = floor(packed / 256);
+    color.g = fmod(packed, 256);
+    color.r = floor(packed / 256);
+    return half4(color / 255, 1);
 }
 
 // 角丸
