@@ -71,13 +71,15 @@ half RoundedCorner(float2 uv, half radius, half width, half height, int flag)
         lerp(1, 0, IS(d_rb - r * r)),
         IS(uv.y > 0.5)
     );
+    const half inIn = uv.y >= 0 && uv.y <= 1 && uv.x >= 0 && uv.x <= 1;
+    
     const half final = lerp( 
         lerp(left, right, IS(uv.x > 0.5)),
-        uv.y >= 0 && uv.y <= 1 && uv.x >= 0 && uv.x <= 1,
+        inIn,
         IS(isNotCorner) // r < x < 1-r && r < y < 1-r
     );
 
-    return final;
+    return final * inIn;
 }
 
 // 角カット
@@ -86,9 +88,11 @@ half CutCorner(float2 uv, half radius, half width, half height, int flag)
     half r = min(width, height) * radius;
     half2 XY = float2(uv.x * width, uv.y * height);
 
-    half isNotCorner = 
+    const half isNotCorner = 
         IS(IS_SMALL(r, XY.x) + IS_SMALL(XY.x, (width - r)) - 1) // r < x < 1-r
         + IS(IS_SMALL(r, XY.y) + IS_SMALL(XY.y, (height - r)) - 1); // r < y < 1-r
+    
+    const half inIn = uv.y >= 0 && uv.y <= 1 && uv.x >= 0 && uv.x <= 1;
 
     // LeftTop
     half lt = (flag & 1 << 0) == 1 << 0 ?
@@ -111,13 +115,9 @@ half CutCorner(float2 uv, half radius, half width, half height, int flag)
         XY.x >= width - r && XY.y <= r
     ;
 
-    half body = lerp( 
-        0,
-        uv.y >= 0 && uv.y <= 1 && uv.x >= 0 && uv.x <= 1,
-        IS(isNotCorner)
-    );
+    half body = lerp(0, inIn, IS(isNotCorner));
  
-    return saturate(lt + rt + lb + rb + body);
+    return saturate(lt + rt + lb + rb + body) * inIn;
 }
 
 half Corner(float2 uv, half radius, half width, half height, int flag)
