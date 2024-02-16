@@ -12,7 +12,7 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _ROUND_SHAPE_ROUND _ROUND_SHAPE_CUT
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_ROUND_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW
 
 // 三角形の内側かどうか
 bool isPointInsideTriangle(half2 p, half2 v0, half2 v1, half2 v2)
@@ -307,19 +307,6 @@ float CalculateRoundStarAlpha(float2 uv, float strength, int numPoints, float ro
     return 1 - step(distanceSquared, rsq);
 }
 
-float CalculateStarAlpha(float2 uv, float strength, int numPoints)
-{
-    float2 polarCoordinates = UVtoPolarCoordinates(uv, strength);
-
-    const float reciprocalSquare = polarCoordinates.x * polarCoordinates.x;
-    const float angle = 2.0 * PI * polarCoordinates.y;
-    const float angleOffset = 2.0 * PI / numPoints;
-    const float distance = cos(angleOffset) / cos(angleOffset - acos(cos(numPoints * angle)) / numPoints);
-    const float distanceSquared = distance * distance;
-    
-    return 1 - step(distanceSquared, reciprocalSquare);
-}
-
 float CalculateHearAlpha(float2 uv, float strength)
 {
     uv -= 0.5;
@@ -419,11 +406,7 @@ float CalculateShapeAlpha(float2 uv, float strength, float4 params)
     return CalculatePolygonAlpha(uv, strength, intValue);
 #elif _SHAPE_STAR
     
-    return CalculateStarAlpha(uv, strength, intValue);    
-#elif _SHAPE_ROUND_STAR
-    
     return CalculateRoundStarAlpha(uv, strength, intValue, value);
-
 #elif _SHAPE_HEART
     return CalculateHearAlpha(uv, strength);
 

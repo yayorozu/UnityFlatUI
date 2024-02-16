@@ -36,7 +36,7 @@ namespace Yorozu.FlatUI.Tool
                 {
                     FlatShapes.ShapeType.Polygon => EditorGUILayout.IntSlider("Polygon", wv, 3, 12),
                     FlatShapes.ShapeType.Polar => EditorGUILayout.IntSlider("Polygon", wv, 2, 20),
-                    FlatShapes.ShapeType.Star or FlatShapes.ShapeType.RoundStar => EditorGUILayout.IntSlider("Polygon", wv, 5, 12),
+                    FlatShapes.ShapeType.Star => EditorGUILayout.IntSlider("Polygon", wv, 5, 12),
                     _ => wv
                 };
                 if (check.changed)
@@ -55,8 +55,8 @@ namespace Yorozu.FlatUI.Tool
                     case FlatShapes.ShapeType.Cross:
                         vec4.x = EditorGUILayout.Slider(_floatValue.displayName, vec4.x, 0.01f, 0.3f);
                         break;
-                    case FlatShapes.ShapeType.RoundStar or FlatShapes.ShapeType.Ring:
-                        vec4.x = EditorGUILayout.Slider(_floatValue.displayName, vec4.x, 0.01f, 0.99f);
+                    case FlatShapes.ShapeType.Star or FlatShapes.ShapeType.Ring:
+                        vec4.x = EditorGUILayout.Slider("Rounded", vec4.x, 0.01f, 1f);
                         break;
                     case FlatShapes.ShapeType.Superellipse:
                         vec4.x = EditorGUILayout.Slider(_floatValue.displayName, vec4.x, 0.2f, 10f);
@@ -85,7 +85,6 @@ namespace Yorozu.FlatUI.Tool
                 FlatShapes.ShapeType.Heart or
                 FlatShapes.ShapeType.Polygon or
                 FlatShapes.ShapeType.Star or
-                FlatShapes.ShapeType.RoundStar or
                 FlatShapes.ShapeType.Cross or
                 FlatShapes.ShapeType.Polar or
                 FlatShapes.ShapeType.Arrow
