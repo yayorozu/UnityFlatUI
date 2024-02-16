@@ -5,6 +5,7 @@
 #define IS_SMALL(a, b) IS( b - a)
 
 static float PI = 3.14159265358979323846;
+static float HALF_PI = PI / 2.0;
 
 #pragma shader_feature _TYPE_DEFAULT _TYPE_OUTLINE _TYPE_SEPARATE
 
@@ -12,7 +13,7 @@ static float PI = 3.14159265358979323846;
 
 #pragma shader_feature _ROUND_SHAPE_ROUND _ROUND_SHAPE_CUT
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_ROUNDED_POLYGON _SHAPE_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW
 
 // 三角形の内側かどうか
 bool isPointInsideTriangle(half2 p, half2 v0, half2 v1, half2 v2)
@@ -289,6 +290,63 @@ half CalculatePolygonAlpha(float2 uv, float strength, int numSides)
     return  step(radius, polygonDistance * strength); 
 }
 
+half CalculateRoundedPolygon(float2 UV, float Width, float Height, float Sides, float Roundness)
+{
+    UV = UV * 2. + float2(-1.,-1.);
+    float epsilon = 1e-6;
+    UV.x = UV.x / ( Width + (Width==0)*epsilon);
+    UV.y = UV.y / ( Height + (Height==0)*epsilon);
+    Roundness = clamp(Roundness, 1e-6, 1.);
+    float i_sides = floor( abs( Sides ) );
+    float fullAngle = 2. * PI / i_sides;
+    float halfAngle = fullAngle / 2.;
+    float opositeAngle = HALF_PI - halfAngle;
+    float diagonal = 1. / cos( halfAngle );
+    // 面取りの値
+    float chamferAngle = Roundness * halfAngle; // 面取りの角度
+    float remainingAngle = halfAngle - chamferAngle; // 残る角度
+    float ratio = tan(remainingAngle) / tan(halfAngle); // これは、ポリゴンの三角形の長さと、面取りの中心からポリゴンの中心までの距離の比率です
+    // 面取りの弧の中心
+    float2 chamferCenter = float2(
+        cos(halfAngle) ,
+        sin(halfAngle)
+    )* ratio * diagonal;
+    // 面取りの弧の開始点
+    float2 chamferOrigin = float2(
+        1.,
+        tan(remainingAngle)
+    );
+    // アル・カーシーの代数学を使用して以下を特定します:
+    // 面取りの中心からポリゴンの中心までの距離 (辺 A)
+    float distA = length(chamferCenter);
+    // 面取りの半径 (辺 B)
+    float distB = 1. - chamferCenter.x;
+    // 辺 C の基準長さ (つまり面取りの開始点までの距離)
+    float distCref = length(chamferOrigin);
+    // これにより、面取りされたポリゴンが、UV 空間に合わせてスケーリングされます
+    // diagonal = length(chamferCenter) + distB;
+    float uvScale = diagonal;
+    UV *= uvScale;
+    float2 polaruv = float2 (
+        atan2( UV.y, UV.x ),
+        length(UV)
+    );
+    polaruv.x += HALF_PI + 2*PI;
+    polaruv.x = fmod( polaruv.x + halfAngle, fullAngle );
+    polaruv.x = abs(polaruv.x - halfAngle);
+    UV = float2( cos(polaruv.x), sin(polaruv.x) ) * polaruv.y;
+    // アル・カーシーの代数学に必要とされる角度を計算します
+    float angleRatio = 1. - (polaruv.x-remainingAngle) / chamferAngle;
+    // ポリゴンの中心から面取りの端までの距離を計算します
+    float distC = sqrt( distA*distA + distB*distB - 2.*distA*distB*cos( PI - halfAngle * angleRatio ) );
+    
+    float chamferZone = ( halfAngle - polaruv.x ) < chamferAngle;
+    half alpha = lerp( UV.x, polaruv.y / distC, chamferZone );
+    // この出力は、距離フィールドではなくその形状のマスクを作成します
+    alpha = saturate((1 - alpha) / fwidth(alpha));
+    return alpha;
+}
+
 float CalculateRoundStarAlpha(float2 uv, float strength, int numPoints, float round)
 {
     float2 polarCoordinates = UVtoPolarCoordinates(uv, strength);
@@ -404,6 +462,10 @@ float CalculateShapeAlpha(float2 uv, float strength, float4 params)
 #elif _SHAPE_POLYGON
     
     return CalculatePolygonAlpha(uv, strength, intValue);
+
+#elif _SHAPE_ROUNDED_POLYGON
+
+    return CalculateRoundedPolygon(uv, strength * 2, strength * 2, intValue, value);
 #elif _SHAPE_STAR
     
     return CalculateRoundStarAlpha(uv, strength, intValue, value);

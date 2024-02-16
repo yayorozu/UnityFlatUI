@@ -34,7 +34,7 @@ namespace Yorozu.FlatUI.Tool
             {
                 wv = shape switch
                 {
-                    FlatShapes.ShapeType.Polygon => EditorGUILayout.IntSlider("Polygon", wv, 3, 12),
+                    FlatShapes.ShapeType.Polygon or FlatShapes.ShapeType.RoundedPolygon => EditorGUILayout.IntSlider("Polygon", wv, 3, 12),
                     FlatShapes.ShapeType.Polar => EditorGUILayout.IntSlider("Polygon", wv, 2, 20),
                     FlatShapes.ShapeType.Star => EditorGUILayout.IntSlider("Polygon", wv, 5, 12),
                     _ => wv
@@ -52,6 +52,9 @@ namespace Yorozu.FlatUI.Tool
             {
                 switch (shape)
                 {
+                    case FlatShapes.ShapeType.RoundedPolygon:
+                        vec4.x = EditorGUILayout.Slider("Rounded", vec4.x, 0f, 0.7f);
+                        break;
                     case FlatShapes.ShapeType.Cross:
                         vec4.x = EditorGUILayout.Slider(_floatValue.displayName, vec4.x, 0.01f, 0.3f);
                         break;
@@ -84,6 +87,7 @@ namespace Yorozu.FlatUI.Tool
             if (shape is FlatShapes.ShapeType.Circle or
                 FlatShapes.ShapeType.Heart or
                 FlatShapes.ShapeType.Polygon or
+                FlatShapes.ShapeType.RoundedPolygon or
                 FlatShapes.ShapeType.Star or
                 FlatShapes.ShapeType.Cross or
                 FlatShapes.ShapeType.Polar or

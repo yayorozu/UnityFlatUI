@@ -14,8 +14,8 @@ namespace Yorozu.FlatUI
         public enum ShapeType
         {
             Circle = 1,
-            RoundedPolygon,
             Polygon,
+            RoundedPolygon,
             Star,
             Heart,
             Cross,
