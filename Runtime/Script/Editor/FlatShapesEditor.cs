@@ -4,20 +4,16 @@ namespace Yorozu.FlatUI.Tool
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(FlatShapes))]
-    public class FlatShapesEditor : Editor
+    public class FlatShapesEditor : FlatUIEditor
     {
-        private SerializedProperty _color;
-        private SerializedProperty _raycast;
         private SerializedProperty _shapeType;
         private SerializedProperty _floatValue;
         private SerializedProperty _outlineWidth;
         private SerializedProperty _outlineColor;
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
-            _color = serializedObject.FindProperty("m_Color");
-            _raycast = serializedObject.FindProperty("m_RaycastTarget");
-            
+            base.OnEnable();
             _shapeType = serializedObject.FindProperty("_shapeType");
             _floatValue = serializedObject.FindProperty("_floatValue");
             
@@ -27,9 +23,8 @@ namespace Yorozu.FlatUI.Tool
 
         public override void OnInspectorGUI()
         {
+            base.OnInspectorGUI();
             serializedObject.Update();
-            EditorGUILayout.PropertyField(_color);
-            EditorGUILayout.PropertyField(_raycast);
             EditorGUILayout.PropertyField(_shapeType);
 
             var shape = (FlatShapes.ShapeType)_shapeType.intValue;

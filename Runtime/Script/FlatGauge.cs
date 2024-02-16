@@ -52,12 +52,8 @@ namespace Yorozu.FlatUI
             }
         }
 
-        protected override void OnPopulateMesh(VertexHelper vh)
+        protected override void OnPopulateMesh(ref List<UIVertex> vertexList)
         {
-            base.OnPopulateMesh(vh);
-            var vertexList = new List<UIVertex>();
-            vh.GetUIVertexStream(vertexList);
-
             var rect = _rectTransform.rect;
             
             var backColorFloat = ColorToFloat(_backColor);
@@ -88,9 +84,6 @@ namespace Yorozu.FlatUI
                 vertex.uv1 = uv1;
                 vertexList[i] = vertex;
             }
-
-            vh.Clear();
-            vh.AddUIVertexTriangleStream(vertexList);
         }
     }
 }

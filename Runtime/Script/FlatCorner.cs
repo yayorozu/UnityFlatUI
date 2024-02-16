@@ -56,12 +56,8 @@ namespace Yorozu.FlatUI
         [SerializeField, ColorUsage(false)]
         private Color _color;
 
-        protected override void OnPopulateMesh(VertexHelper vh)
+        protected override void OnPopulateMesh(ref List<UIVertex> vertexList)
         {
-            base.OnPopulateMesh(vh);
-            var vertexList = new List<UIVertex>();
-            vh.GetUIVertexStream(vertexList);
-
             var rect = _rectTransform.rect;
 
             var color = ColorToFloat(_color);
@@ -81,9 +77,6 @@ namespace Yorozu.FlatUI
                 vertex.uv1 = uv1Param;
                 vertexList[i] = vertex;
             }
-
-            vh.Clear();
-            vh.AddUIVertexTriangleStream(vertexList);
         }
     }
 }

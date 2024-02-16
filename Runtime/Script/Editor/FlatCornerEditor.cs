@@ -4,10 +4,8 @@ namespace Yorozu.FlatUI.Tool
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(FlatCorner))]
-    public class FlatCornerEditor : Editor
+    public class FlatCornerEditor : FlatUIEditor
     {
-        private SerializedProperty _mcolor;
-        private SerializedProperty _raycast;
         private SerializedProperty _cornerShape;
         private SerializedProperty _flags;
         private SerializedProperty _radius;
@@ -16,10 +14,9 @@ namespace Yorozu.FlatUI.Tool
         private SerializedProperty _separate;
         private SerializedProperty _color;
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
-            _mcolor = serializedObject.FindProperty("m_Color");
-            _raycast = serializedObject.FindProperty("m_RaycastTarget");
+            base.OnEnable();
             _cornerShape = serializedObject.FindProperty("_cornerShape");
             _flags = serializedObject.FindProperty("_flags");
             _radius = serializedObject.FindProperty("_radius");
@@ -32,8 +29,7 @@ namespace Yorozu.FlatUI.Tool
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            EditorGUILayout.PropertyField(_mcolor);
-            EditorGUILayout.PropertyField(_raycast);
+            base.OnInspectorGUI();
             EditorGUILayout.PropertyField(_cornerShape);
             EditorGUILayout.PropertyField(_flags);
             EditorGUILayout.PropertyField(_radius);

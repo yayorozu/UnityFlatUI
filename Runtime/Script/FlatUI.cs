@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -98,7 +99,27 @@ namespace Yorozu.FlatUI
             _cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
         }
 #endif
-
+        
+        [SerializeField, ColorUsage(false)]
+        private Color _leftTopColor = Color.white;
+        [SerializeField]
+        private bool _overrideLeftTopColor;
+        
+        [SerializeField, ColorUsage(false)]
+        private Color _leftBottomColor = Color.white;
+        [SerializeField]
+        private bool _overrideLeftBottomColor;
+        
+        [SerializeField, ColorUsage(false)]
+        private Color _rightTopColor = Color.white;
+        [SerializeField]
+        private bool _overrideRightTopColor;
+        
+        [SerializeField, ColorUsage(false)]
+        private Color _rightBottomColor = Color.white;
+        [SerializeField]
+        private bool _overrideRightBottomColor;
+        
         protected float ColorToFloat(Color color)
         {
             var rgb = new Vector3Int(
@@ -110,5 +131,43 @@ namespace Yorozu.FlatUI
             return packed / (256 * 256 * 256);
         }
         
+        protected sealed override void OnPopulateMesh(VertexHelper vh)
+        {
+            base.OnPopulateMesh(vh);
+            var vertexList = new List<UIVertex>();
+            vh.GetUIVertexStream(vertexList);
+
+            if (_overrideLeftTopColor)
+                UpdateColor(1, _leftTopColor);
+            if (_overrideRightTopColor)
+            {
+                UpdateColor(2, _rightTopColor);
+                UpdateColor(3, _rightTopColor);
+            }
+            if (_overrideRightBottomColor)
+            {
+                UpdateColor(4, _rightBottomColor);
+            }
+
+            if (_overrideLeftBottomColor)
+            {
+                UpdateColor(0, _leftBottomColor);
+                UpdateColor(5, _leftBottomColor);
+            }
+
+            void UpdateColor(int index, Color color)
+            {
+                var v = vertexList[index];
+                v.color = color;
+                vertexList[index] = v;
+            }
+            
+            OnPopulateMesh(ref vertexList);
+            
+            vh.Clear();
+            vh.AddUIVertexTriangleStream(vertexList);
+        }
+        
+        protected abstract void OnPopulateMesh(ref List<UIVertex> vertexList);
     }
 }

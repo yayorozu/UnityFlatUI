@@ -40,12 +40,8 @@ namespace Yorozu.FlatUI
         [SerializeField, ColorUsage(false)]
         private Color _outlineColor;
 
-        protected override void OnPopulateMesh(VertexHelper vh)
+        protected override void OnPopulateMesh(ref List<UIVertex> vertexList)
         {
-            base.OnPopulateMesh(vh);
-            var vertexList = new List<UIVertex>();
-            vh.GetUIVertexStream(vertexList);
-
             var uv1Param = _floatValue;
             // w は int で使う
             uv1Param.w /= 50f;
@@ -59,9 +55,6 @@ namespace Yorozu.FlatUI
                 vertex.uv1 = uv1Param;
                 vertexList[i] = vertex;
             }
-
-            vh.Clear();
-            vh.AddUIVertexTriangleStream(vertexList);
         }
     }
 }

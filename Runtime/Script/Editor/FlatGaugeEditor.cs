@@ -5,10 +5,8 @@ namespace Yorozu.FlatUI.Tool
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(FlatGauge))]
-    public class FlatGaugeEditor : Editor
+    public class FlatGaugeEditor : FlatUIEditor
     {
-        private SerializedProperty _color;
-        private SerializedProperty _raycast;
         private SerializedProperty _gaugeType;
         private SerializedProperty _width;
         private SerializedProperty _startAngle;
@@ -19,10 +17,9 @@ namespace Yorozu.FlatUI.Tool
         private SerializedProperty _frameColor;
         private SerializedProperty _backColor;
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
-            _color = serializedObject.FindProperty("m_Color");
-            _raycast = serializedObject.FindProperty("m_RaycastTarget");
+            base.OnEnable();
             _gaugeType = serializedObject.FindProperty("_gaugeType");
             _width = serializedObject.FindProperty("_width");
             _startAngle = serializedObject.FindProperty("_startAngle");
@@ -36,9 +33,8 @@ namespace Yorozu.FlatUI.Tool
 
         public override void OnInspectorGUI()
         {
+            base.OnInspectorGUI();
             serializedObject.Update();
-            EditorGUILayout.PropertyField(_color);
-            EditorGUILayout.PropertyField(_raycast);
             
             EditorGUILayout.PropertyField(_gaugeType);
             EditorGUILayout.PropertyField(_fillAmount);
