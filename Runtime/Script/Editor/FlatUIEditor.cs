@@ -49,7 +49,7 @@ namespace Yorozu.FlatUI.Tool
             EditorGUILayout.PropertyField(_mcolor);
             EditorGUILayout.PropertyField(_raycast);
             
-            var inspectorHalfWidth = EditorGUIUtility.currentViewWidth / 2f;
+            var inspectorHalfWidth = EditorGUIUtility.currentViewWidth / 2f - 14f;
             
             EditorGUILayout.LabelField("Override Vertex Color", EditorStyles.boldLabel);
             {
