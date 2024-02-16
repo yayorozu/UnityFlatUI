@@ -41,6 +41,16 @@ namespace Yorozu.FlatUI
         
         [SerializeField, ColorUsage(false)]
         private Color _backColor;
+        
+        public float FillAmount
+        {
+            get => _fillAmount;
+            set
+            {
+                _fillAmount = Mathf.Clamp01(value);
+                SetVerticesDirty();
+            }
+        }
 
         protected override void OnPopulateMesh(VertexHelper vh)
         {
