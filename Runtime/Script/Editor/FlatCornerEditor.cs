@@ -13,6 +13,8 @@ namespace Yorozu.FlatUI.Tool
         private SerializedProperty _outline;
         private SerializedProperty _separate;
         private SerializedProperty _color;
+        private SerializedProperty _shift;
+        private SerializedProperty _axis;
 
         protected override void OnEnable()
         {
@@ -24,28 +26,51 @@ namespace Yorozu.FlatUI.Tool
             _outline = serializedObject.FindProperty("_outline");
             _separate = serializedObject.FindProperty("_separate");
             _color = serializedObject.FindProperty("_color");
+            _shift = serializedObject.FindProperty("_shift");
+            _axis = serializedObject.FindProperty("_axis");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
             base.OnInspectorGUI();
-            EditorGUILayout.PropertyField(_cornerShape);
-            EditorGUILayout.PropertyField(_flags);
-            EditorGUILayout.PropertyField(_radius);
-            EditorGUILayout.PropertyField(_type);
-            if (_type.intValue == (int) FlatCorner.Type.Outline)
+            using (var check = new EditorGUI.ChangeCheckScope())
             {
-                EditorGUILayout.PropertyField(_outline);
-                EditorGUILayout.PropertyField(_color);
+                EditorGUILayout.PropertyField(_cornerShape);
+                if (check.changed)
+                {
+                    var shape = (FlatCorner.CornerShape) _cornerShape.intValue;
+                    if (shape is FlatCorner.CornerShape.Shift)
+                    {
+                        _radius.floatValue = 0;
+                        _type.intValue = (int) FlatCorner.Type.None;
+                    }
+                }
             }
 
-            if (_type.intValue == (int) FlatCorner.Type.Separate)
+            if ((FlatCorner.CornerShape) _cornerShape.intValue is FlatCorner.CornerShape.Shift)
             {
-                EditorGUILayout.PropertyField(_separate);
-                EditorGUILayout.PropertyField(_color);
+                EditorGUILayout.PropertyField(_axis);
+                EditorGUILayout.PropertyField(_shift);
             }
+            else
+            {
+                EditorGUILayout.PropertyField(_flags);
+                EditorGUILayout.PropertyField(_radius);
+                EditorGUILayout.PropertyField(_type);
+                if (_type.intValue == (int) FlatCorner.Type.Outline)
+                {
+                    EditorGUILayout.PropertyField(_outline);
+                    EditorGUILayout.PropertyField(_color);
+                }
 
+                if (_type.intValue == (int) FlatCorner.Type.Separate)
+                {
+                    EditorGUILayout.PropertyField(_separate);
+                    EditorGUILayout.PropertyField(_color);
+                }
+            }
+            
             serializedObject.ApplyModifiedProperties();
         }
     }

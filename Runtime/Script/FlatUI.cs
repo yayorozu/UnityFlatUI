@@ -130,7 +130,27 @@ namespace Yorozu.FlatUI
             float packed = rgb.x * 65536 + rgb.y * 256 + rgb.z;
             return packed / (256 * 256 * 256);
         }
+
+        protected int[] LeftTopIndexes => new int[] {1};
+        protected int[] LeftBottomIndexes => new int[] {0, 5};
+        protected int[] RightTopIndexes => new int[] {2, 3};
+        protected int[] RightBottomIndexes => new int[] {4};
         
+        protected void UpdateColor(ref List<UIVertex> vertexList, int index, Color color)
+        {
+            var v = vertexList[index];
+            v.color = color;
+            vertexList[index] = v;
+        }
+        
+        protected void UpdatePosition(ref List<UIVertex> vertexList, int index, Vector2 offset)
+        {
+            var v = vertexList[index];
+            v.position.x += offset.x;
+            v.position.y += offset.y;
+            vertexList[index] = v;
+        }
+
         protected sealed override void OnPopulateMesh(VertexHelper vh)
         {
             base.OnPopulateMesh(vh);
@@ -138,30 +158,20 @@ namespace Yorozu.FlatUI
             vh.GetUIVertexStream(vertexList);
 
             if (_overrideLeftTopColor)
-                UpdateColor(1, _leftTopColor);
+                foreach (var index in LeftTopIndexes)
+                    UpdateColor(ref vertexList, index, _leftTopColor);
             if (_overrideRightTopColor)
-            {
-                UpdateColor(2, _rightTopColor);
-                UpdateColor(3, _rightTopColor);
-            }
+                foreach (var index in RightTopIndexes)
+                    UpdateColor(ref vertexList, index, _rightTopColor);
+
             if (_overrideRightBottomColor)
-            {
-                UpdateColor(4, _rightBottomColor);
-            }
+                foreach (var index in RightBottomIndexes)
+                    UpdateColor(ref vertexList, index, _rightBottomColor);
 
             if (_overrideLeftBottomColor)
-            {
-                UpdateColor(0, _leftBottomColor);
-                UpdateColor(5, _leftBottomColor);
-            }
+                foreach (var index in LeftBottomIndexes)
+                    UpdateColor(ref vertexList, index, _leftBottomColor);
 
-            void UpdateColor(int index, Color color)
-            {
-                var v = vertexList[index];
-                v.color = color;
-                vertexList[index] = v;
-            }
-            
             OnPopulateMesh(ref vertexList);
             
             vh.Clear();
