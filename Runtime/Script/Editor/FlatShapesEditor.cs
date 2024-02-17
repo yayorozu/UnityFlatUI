@@ -194,8 +194,8 @@ namespace Yorozu.FlatUI.Tool
                 case ShapeType.Heart:
                 case ShapeType.Polar:
                 case ShapeType.Arrow:
-                    return true;
                 case ShapeType.CheckMark:
+                    return true;
                 case ShapeType.Superellipse:
                 case ShapeType.Cross:
                 case ShapeType.Ring:

@@ -493,7 +493,7 @@ float RoundedRectangle(float2 uv, float2 a, float2 b, float width)
 float CalculateCheckMark(float2 uv, float strength, float4 p)
 {
     float a = 0;
-    const float width = p.x;
+    const float width = p.x * strength * 2;
     const float2 left = float2(0.2, p.y);
     const float2 right = float2(0.8, p.z);
     const float2 bottom = float2(0.5, 0.2);
