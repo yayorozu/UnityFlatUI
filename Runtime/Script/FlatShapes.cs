@@ -33,7 +33,7 @@ namespace Yorozu.FlatUI
         [SerializeField]
         private Vector4 _floatValue;
         
-        [SerializeField, Range(0, 0.4f)]
+        [SerializeField, Range(0, 0.25f)]
         private float _outlineWidth;
         
         [SerializeField, ColorUsage(false)]

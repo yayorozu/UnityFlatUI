@@ -1,4 +1,6 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
+using UnityEngine;
 
 namespace Yorozu.FlatUI.Tool
 {
@@ -25,7 +27,50 @@ namespace Yorozu.FlatUI.Tool
         {
             base.OnInspectorGUI();
             serializedObject.Update();
-            EditorGUILayout.PropertyField(_shapeType);
+            using (var check = new EditorGUI.ChangeCheckScope())
+            {
+                EditorGUILayout.PropertyField(_shapeType);
+                if (check.changed)
+                {
+                    var vec = _floatValue.vector4Value;
+                    switch ((FlatShapes.ShapeType)_shapeType.intValue)
+                    {
+                        case FlatShapes.ShapeType.Circle:
+                            break;
+                        case FlatShapes.ShapeType.Polygon:
+                            vec.w = Mathf.Clamp(vec.w, 3, 12);
+                            break;
+                        case FlatShapes.ShapeType.RoundedPolygon:
+                            vec.x = Mathf.Clamp(vec.x, 0.01f, 0.7f);
+                            break;
+                        case FlatShapes.ShapeType.Star:
+                            vec.x = Mathf.Clamp(vec.x, 0.01f, 1f);
+                            vec.w = Mathf.Clamp(vec.w, 5, 12);
+                            break;
+                        case FlatShapes.ShapeType.Heart:
+                            break;
+                        case FlatShapes.ShapeType.Cross:
+                            vec.x = Mathf.Clamp(vec.x, 0.01f, 0.3f);
+                            break;
+                        case FlatShapes.ShapeType.Ring:
+                            vec.x = Mathf.Clamp(vec.x, 0.01f, 1f);
+                            break;
+                        case FlatShapes.ShapeType.Polar:
+                            vec.w = Mathf.Clamp(vec.w, 2, 20);
+                            break;
+                        case FlatShapes.ShapeType.Superellipse:
+                            _outlineWidth.floatValue = 0f;
+                            break;
+                        case FlatShapes.ShapeType.Arrow:
+                            vec.x = Mathf.Clamp(vec.x, 0.1f, 0.9f);
+                            vec.y = Mathf.Clamp(vec.x, 0.01f, 0.4f);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                    _floatValue.vector4Value = vec;
+                }
+            }
 
             var shape = (FlatShapes.ShapeType)_shapeType.intValue;
             
