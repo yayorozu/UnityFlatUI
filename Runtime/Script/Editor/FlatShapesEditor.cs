@@ -94,21 +94,17 @@ namespace Yorozu.FlatUI.Tool
                         var iv = (int)vec[i];
                         var min = Mathf.RoundToInt(p[i].Min);
                         var max = Mathf.RoundToInt(p[i].Max);
-                        iv = EditorGUILayout.IntSlider(p[i].Name, iv, min, max);
-                        if (check.changed)
-                        {
-                            vec[i] = iv;
-                            _floatValue.vector4Value = vec;
-                        }
+                        vec[i] = EditorGUILayout.IntSlider(p[i].Name, iv, min, max);
                     }
                     else
-                    {
+                    { 
                         vec[i] = EditorGUILayout.Slider(p[i].Name, vec[i], p[i].Min, p[i].Max);
-                        if (check.changed)
-                        {
-                            _floatValue.vector4Value = vec;
-                        }
                     }
+                }
+                
+                if (check.changed)
+                {
+                    _floatValue.vector4Value = vec;
                 }
             }
             
@@ -177,8 +173,8 @@ namespace Yorozu.FlatUI.Tool
                     break;
                 case ShapeType.CheckMark:
                     p[0] = new InspectorParam("Width", 0.01f, 0.4f);
-                    p[1] = new InspectorParam("Left", 0.1f, 0.5f);
-                    p[2] = new InspectorParam("Right", 0.5f, 0.9f);
+                    p[1] = new InspectorParam("Left", 0.3f, 0.5f);
+                    p[2] = new InspectorParam("Right", 0.5f, 0.8f);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
