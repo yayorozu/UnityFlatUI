@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEditor;
 using UnityEngine;
+using ShapeType = Yorozu.FlatUI.FlatShapes.ShapeType;
 
 namespace Yorozu.FlatUI.Tool
 {
@@ -11,21 +11,19 @@ namespace Yorozu.FlatUI.Tool
     {
         private SerializedProperty _shapeType;
         private SerializedProperty _floatValue;
+        private SerializedProperty _innerClip;
         private SerializedProperty _outlineWidth;
         private SerializedProperty _outlineColor;
 
-        private FlatShapes _shapes;
-        
         protected override void OnEnable()
         {
             base.OnEnable();
             _shapeType = serializedObject.FindProperty("_shapeType");
             _floatValue = serializedObject.FindProperty("_floatValue");
             
+            _innerClip = serializedObject.FindProperty("_innerClip");
             _outlineWidth = serializedObject.FindProperty("_outlineWidth");
             _outlineColor = serializedObject.FindProperty("_outlineColor");
-            
-            _shapes = target as FlatShapes; 
         }
 
         public override void OnInspectorGUI()
@@ -33,15 +31,16 @@ namespace Yorozu.FlatUI.Tool
             base.OnInspectorGUI();
             serializedObject.Update();
             
-            var shape = (FlatShapes.ShapeType)_shapeType.intValue;
-            var p =  _shapes.GetInspectorParam(shape);
+            var shape = (ShapeType)_shapeType.intValue;
+            var p =  GetInspectorParam(shape);
             var vec = _floatValue.vector4Value;
             using (var check = new EditorGUI.ChangeCheckScope())
             {
                 EditorGUILayout.PropertyField(_shapeType);
                 if (check.changed)
                 {
-                    var newP = _shapes.GetInspectorParam((FlatShapes.ShapeType)_shapeType.intValue);
+                    var newShape = (ShapeType) _shapeType.intValue;
+                    var newP = GetInspectorParam(newShape);
                     for (var i = 0; i < p.Length; i++)
                     {
                         if (newP[i] == null)
@@ -50,12 +49,15 @@ namespace Yorozu.FlatUI.Tool
                         vec[i] = newP[i].Clamp(vec[i]);
                     }
 
-                    _floatValue.vector4Value = vec;;
+                    if (!OutlineEnable(newShape))
+                    {
+                        _innerClip.boolValue = false;
+                    }
+                    _floatValue.vector4Value = vec;
                 }
             }
             
-            
-            var outline = _shapes.OutlineEnable(shape);
+            var outline = OutlineEnable(shape);
             
             if (outline)
             {
@@ -63,10 +65,9 @@ namespace Yorozu.FlatUI.Tool
                 using (var check = new EditorGUI.ChangeCheckScope())
                 using (new EditorGUI.IndentLevelScope())
                 {
-                    bool clip = vec.z > 0;
                     using (new EditorGUI.DisabledGroupScope(_outlineWidth.floatValue <= 0))
-                    {
-                        clip = EditorGUILayout.Toggle("Inner Clip", clip); 
+                    { 
+                        EditorGUILayout.PropertyField(_innerClip);
                     }
                     EditorGUILayout.PropertyField(_outlineWidth, new GUIContent("Width"));
                     EditorGUILayout.PropertyField(_outlineColor, new GUIContent("Color"));
@@ -75,10 +76,8 @@ namespace Yorozu.FlatUI.Tool
                     {
                         if (_outlineWidth.floatValue <= 0)
                         {
-                            clip = false;
+                            _innerClip.boolValue = false;
                         }
-                        vec.z = clip ? 1 : 0;
-                        _floatValue.vector4Value = vec;
                     }
                 }
             }
@@ -114,6 +113,100 @@ namespace Yorozu.FlatUI.Tool
             }
             
             serializedObject.ApplyModifiedProperties();
+        }
+        
+        
+        internal class InspectorParam
+        {
+            public string Name;
+            public float Min;
+            public float Max;
+            public bool Int;
+
+            public InspectorParam(string name, float min, float max, bool i = false)
+            {
+                Name = name;
+                Min = min;
+                Max = max;
+                Int = i;
+            }
+
+            public float Clamp(float value)
+            {
+                return Mathf.Clamp(value, Min, Max);
+            }    
+        }
+
+        private InspectorParam[] GetInspectorParam(ShapeType shapeType)
+        {
+            var p = new InspectorParam[4];
+            switch (shapeType)
+            {
+                case ShapeType.Circle:
+                    break;
+                case ShapeType.Polygon:
+                    p[3] = new InspectorParam("Polygon", 3f, 12f, true);
+                    break;
+                case ShapeType.RoundedPolygon:
+                    p[0] = new InspectorParam("Rounded", 0f, 0.7f);
+                    p[3] = new InspectorParam("Polygon", 3f, 12f, true);
+                    break;
+                case ShapeType.Heart:
+                    break;
+                case ShapeType.Cross:
+                    p[0] = new InspectorParam("Value", 0.01f, 0.3f);
+                    break;
+                case ShapeType.Star:
+                    p[0] = new InspectorParam("Rounded", 0.01f, 1f);
+                    p[3] = new InspectorParam("Polygon", 5f, 12f, true);
+                    break;
+                case ShapeType.Ring:
+                    p[0] = new InspectorParam("Rounded", 0.01f, 1f);
+                    break;
+                case ShapeType.Polar:
+                    p[0] = new InspectorParam("Mode", 0f, 3, true);
+                    p[3] = new InspectorParam("Polygon", 2f, 20f, true);
+                    break;
+                case ShapeType.Superellipse:
+                    p[0] = new InspectorParam("Value", 0.2f, 10f);
+                    p[1] = new InspectorParam("Blur", 0f, 0.5f);
+                    break;
+                case ShapeType.Arrow:
+                    p[0] = new InspectorParam("ArrowWidth", 0.1f, 0.9f);
+                    p[1] = new InspectorParam("LineWidth", 0.01f, 0.4f);
+                    break;
+                case ShapeType.CheckMark:
+                    p[0] = new InspectorParam("Width", 0.01f, 0.4f);
+                    p[1] = new InspectorParam("Left", 0.1f, 0.5f);
+                    p[2] = new InspectorParam("Right", 0.5f, 0.9f);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return p;
+        }
+
+        private bool OutlineEnable(ShapeType shapeType)
+        {
+            switch (shapeType)
+            {
+                case ShapeType.Circle:
+                case ShapeType.Polygon:
+                case ShapeType.RoundedPolygon:
+                case ShapeType.Star:
+                case ShapeType.Heart:
+                case ShapeType.Polar:
+                case ShapeType.Arrow:
+                    return true;
+                case ShapeType.CheckMark:
+                case ShapeType.Superellipse:
+                case ShapeType.Cross:
+                case ShapeType.Ring:
+                    return false;
+                 default:
+                    throw new ArgumentOutOfRangeException(nameof(shapeType), shapeType, null);
+            }
         }
 
     }

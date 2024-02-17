@@ -13,7 +13,7 @@ static float HALF_PI = PI / 2.0;
 
 #pragma shader_feature _ROUND_SHAPE_ROUND _ROUND_SHAPE_CUT
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_ROUNDED_POLYGON _SHAPE_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_ROUNDED_POLYGON _SHAPE_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW _SHAPE_CHECK_MARK
 
 // 三角形の内側かどうか
 bool isPointInsideTriangle(half2 p, half2 v0, half2 v1, half2 v2)
@@ -452,10 +452,61 @@ float CalculateArrowAlpha(float2 uv, float strength, float arrowWidth, float arr
     ? 1 : 0;
 }
 
+// 回転する四角形
+float RotateRectangle(float2 uv, float width, float height, float cngle, float2 center)
+{
+    const float angleRad = radians(cngle);
+    
+    const float cosAngle = cos(angleRad);
+    const float sinAngle = sin(angleRad);
+    
+    float2 translatedUV = uv - center;
+    
+    const float2 rotatedUV = float2(translatedUV.x * cosAngle - translatedUV.y * sinAngle, translatedUV.x * sinAngle + translatedUV.y * cosAngle);
+    
+    float2 d = abs(rotatedUV * 2) - float2(width, height);
+    d = 1 - d / fwidth(d);
+    return  saturate(min(d.x, d.y));
+}
+
+// 円
+float Circle(float2 uv, float radius, float2 center)
+{
+    const float2 delta = uv - center;
+    const float distance = length(delta);
+    return step(distance, radius);
+}
+
+// 角丸の四角形
+float RoundedRectangle(float2 uv, float2 a, float2 b, float width)
+{
+    const float2 center = (a + b) / 2;
+    float2 to = a - b;
+    const float angle = atan2(to.y, to.x) * (180 / PI);
+    const float dist = distance(a, b);
+    float v = RotateRectangle(uv, dist, width, -angle, center);
+    v += Circle(uv, width / 2, a);
+    v += Circle(uv, width / 2, b);
+    return saturate(v);
+}
+
+float CalculateCheckMark(float2 uv, float strength, float4 p)
+{
+    float a = 0;
+    float width = p.x;
+    float2 left = float2(0.2, p.y);
+    float2 right = float2(0.8, p.z);
+    float2 bottom = float2(0.5, 0.2);
+    a += RoundedRectangle(uv, left, bottom, width);
+    a += RoundedRectangle(uv, right, bottom, width);
+    return saturate(a); 
+}
+
 float CalculateShapeAlpha(float2 uv, float strength, float4 params)
 {
-    int intValue = (int)(params.w * 50);
-    float value = params.x;
+    params.w *= 50;
+    int intValue = (int)params.w;
+    
 #ifdef _SHAPE_CIRCLE
     
     return CalculateCircleAlpha(uv, strength);
@@ -465,37 +516,40 @@ float CalculateShapeAlpha(float2 uv, float strength, float4 params)
 
 #elif _SHAPE_ROUNDED_POLYGON
 
-    return CalculateRoundedPolygon(uv, strength * 2, strength * 2, intValue, value);
+    return CalculateRoundedPolygon(uv, strength * 2, strength * 2, intValue, params.x);
 #elif _SHAPE_STAR
     
-    return CalculateRoundStarAlpha(uv, strength, intValue, value);
+    return CalculateRoundStarAlpha(uv, strength, intValue, params.x);
 #elif _SHAPE_HEART
     return CalculateHearAlpha(uv, strength);
 
 #elif _SHAPE_CROSS
 
-    return CalculateCrossAlpha(uv, strength, value);
+    return CalculateCrossAlpha(uv, strength, params.x);
 
 #elif _SHAPE_RING
 
-    return CalculateRingAlpha(uv, value);
+    return CalculateRingAlpha(uv, params.x);
 
 #elif _SHAPE_POLAR
 
-    return CalculatePolarAlpha(uv, strength, intValue, value);
+    return CalculatePolarAlpha(uv, strength, intValue, params.x);
 #elif _SHAPE_SUPERELLIPSE
 
-    return CalculateSuperEllipseAlpha(uv, params.y, value);
+    return CalculateSuperEllipseAlpha(uv, params.y, params.x);
 #elif _SHAPE_ARROW
     
     return CalculateArrowAlpha(uv, strength, params.x, params.y);
+#elif _SHAPE_CHECK_MARK
+
+    return CalculateCheckMark(uv, strength, params);
 #endif
     return 0;
 }
 
 half4 Shapes(float4 baseColor, float4 uv0, float4 uv1)
 {
-    const half outlineWidth = uv0.z;
+    const half outlineWidth = frac(uv0.z);
     const half3 outlineColor = FloatToColor(uv0.w).rgb;
 
     const float outlineStrength = 0.5;
@@ -508,7 +562,7 @@ half4 Shapes(float4 baseColor, float4 uv0, float4 uv1)
     baseColor.rgb = lerp(baseColor.rgb, outlineColor, (1 - alpha) * (1 - step(outlineWidth, 0)));
 
     // Clip
-    baseColor.a *= (outlineAlpha * alpha) * uv1.z > 0 ? 0 : 1;
+    baseColor.a *= (outlineAlpha * alpha) * floor(uv0.z) > 0 ? 0 : 1;
 
     return baseColor;
 }
