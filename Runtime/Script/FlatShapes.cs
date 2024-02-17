@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Yorozu.FlatUI
 {
@@ -34,7 +33,7 @@ namespace Yorozu.FlatUI
         [SerializeField]
         private Vector4 _floatValue;
         
-        [SerializeField, Range(0, 0.25f)]
+        [SerializeField, Range(0, 0.4f)]
         private float _outlineWidth;
         
         [SerializeField, ColorUsage(false)]

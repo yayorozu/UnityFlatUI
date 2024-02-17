@@ -78,6 +78,7 @@ namespace Yorozu.FlatUI.Tool
                     }
                         break;
                 }
+                
                 if (check.changed)
                 {
                     _floatValue.vector4Value = vec4;
@@ -94,8 +95,26 @@ namespace Yorozu.FlatUI.Tool
                 FlatShapes.ShapeType.Arrow
                )
             {
-                EditorGUILayout.PropertyField(_outlineWidth);
-                EditorGUILayout.PropertyField(_outlineColor);
+                using (var check = new EditorGUI.ChangeCheckScope())
+                {
+                    bool clip = vec4.z > 0;
+                    using (new EditorGUI.DisabledGroupScope(_outlineWidth.floatValue <= 0))
+                    {
+                        clip = EditorGUILayout.Toggle("Clip", clip); 
+                    }
+                    EditorGUILayout.PropertyField(_outlineWidth);
+                    EditorGUILayout.PropertyField(_outlineColor);
+
+                    if (check.changed)
+                    {
+                        if (_outlineWidth.floatValue <= 0)
+                        {
+                            clip = false;
+                        }
+                        vec4.z = clip ? 1 : 0;
+                        _floatValue.vector4Value = vec4;
+                    }
+                }
             }
 
             serializedObject.ApplyModifiedProperties();

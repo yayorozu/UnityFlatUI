@@ -507,5 +507,8 @@ half4 Shapes(float4 baseColor, float4 uv0, float4 uv1)
     baseColor.a *= outlineAlpha;
     baseColor.rgb = lerp(baseColor.rgb, outlineColor, (1 - alpha) * (1 - step(outlineWidth, 0)));
 
+    // Clip
+    baseColor.a *= (outlineAlpha * alpha) * uv1.z > 0 ? 0 : 1;
+
     return baseColor;
 }
