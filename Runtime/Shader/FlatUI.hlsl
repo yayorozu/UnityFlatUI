@@ -138,7 +138,7 @@ half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
     half width = uv.z;
     half height = uv.w;
 
-    baseColor.a = Corner(uv, radius, width, height, flag);
+    baseColor.a *= Corner(uv, radius, width, height, flag);
 
 #ifdef _TYPE_OUTLINE
     half outline = uv1.w;

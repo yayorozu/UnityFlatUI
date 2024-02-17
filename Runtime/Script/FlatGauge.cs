@@ -52,12 +52,13 @@ namespace Yorozu.FlatUI
             }
         }
 
-        protected override void OnPopulateMesh(ref List<UIVertex> vertexList)
+        protected override void OnPopulateMesh(ref List<UIVertex> vertexList, bool shadow)
         {
             var rect = _rectTransform.rect;
             
             var backColorFloat = ColorToFloat(_backColor);
-            var uv1 = new Vector4(0, 0, _frameWidth, ColorToFloat(_frameColor));
+            var frameWidth = shadow ? 0 : _frameWidth;
+            var uv1 = new Vector4(0, 0, frameWidth, ColorToFloat(_frameColor));
             if (_gaugeType is GaugeType.Circle)
             {
                 var radian = _startAngle * (Mathf.PI / 180);

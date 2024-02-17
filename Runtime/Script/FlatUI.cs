@@ -119,6 +119,15 @@ namespace Yorozu.FlatUI
         private Color _rightBottomColor = Color.white;
         [SerializeField]
         private bool _overrideRightBottomColor;
+
+        [SerializeField]
+        private bool _shadow;
+
+        [SerializeField]
+        protected Color _shadowColor = new Color(0.1f, 0.1f, 0.1f, 0.5f);
+
+        [SerializeField]
+        private Vector2 _shadowOffset;
         
         protected float ColorToFloat(Color color)
         {
@@ -172,12 +181,26 @@ namespace Yorozu.FlatUI
                 foreach (var index in LeftBottomIndexes)
                     UpdateColor(ref vertexList, index, _leftBottomColor);
 
-            OnPopulateMesh(ref vertexList);
+            OnPopulateMesh(ref vertexList, false);
+            
+            if (_shadow)
+            {
+                var shadowVertexList = new List<UIVertex>(vertexList);
+                OnPopulateMesh(ref shadowVertexList, true);
+
+                for (var i = 0; i < shadowVertexList.Count; i++)
+                {
+                    UpdateColor(ref shadowVertexList, i, _shadowColor);
+                    UpdatePosition(ref shadowVertexList, i, _shadowOffset);
+                }
+                
+                vertexList.InsertRange(0, shadowVertexList);
+            }
             
             vh.Clear();
             vh.AddUIVertexTriangleStream(vertexList);
         }
-        
-        protected abstract void OnPopulateMesh(ref List<UIVertex> vertexList);
+
+        protected abstract void OnPopulateMesh(ref List<UIVertex> vertexList, bool shadow);
     }
 }

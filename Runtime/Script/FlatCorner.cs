@@ -63,18 +63,18 @@ namespace Yorozu.FlatUI
         [SerializeField]
         private RectTransform.Axis _axis;
 
-        protected override void OnPopulateMesh(ref List<UIVertex> vertexList)
+        protected override void OnPopulateMesh(ref List<UIVertex> vertexList, bool shadow)
         {
             var rect = _rectTransform.rect;
 
-            var color = ColorToFloat(_color);
+            var colorFloat = ColorToFloat(_color);
 
             var flagsClamp = (int)_flags / 15f;
-            var uv1Param = new Vector4(_radius, flagsClamp, color);
+            var uv1Param = new Vector4(_radius, flagsClamp, colorFloat);
             uv1Param.w = _type switch
             {
-                Type.Outline => _outline,
-                Type.Separate => _separate,
+                Type.Outline => shadow ? 0 : _outline,
+                Type.Separate => shadow ? 1 : _separate,
                 _ => uv1Param.w
             };
 

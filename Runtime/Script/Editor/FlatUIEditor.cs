@@ -20,6 +20,10 @@ namespace Yorozu.FlatUI.Tool
         
         private SerializedProperty _rightBottomColor;
         private SerializedProperty _overrideRightBottomColor;
+        
+        private SerializedProperty _shadow;
+        private SerializedProperty _shadowColor;
+        private SerializedProperty _shadowOffset;
 
         private static class Styles
         {
@@ -31,7 +35,6 @@ namespace Yorozu.FlatUI.Tool
             _mcolor = serializedObject.FindProperty("m_Color");
             _raycast = serializedObject.FindProperty("m_RaycastTarget");
             
-            
             _leftTopColor = serializedObject.FindProperty("_leftTopColor");
             _overrideLeftTopColor = serializedObject.FindProperty("_overrideLeftTopColor");
             _leftBottomColor = serializedObject.FindProperty("_leftBottomColor");
@@ -40,6 +43,10 @@ namespace Yorozu.FlatUI.Tool
             _overrideRightTopColor = serializedObject.FindProperty("_overrideRightTopColor");
             _rightBottomColor = serializedObject.FindProperty("_rightBottomColor");
             _overrideRightBottomColor = serializedObject.FindProperty("_overrideRightBottomColor");
+            
+            _shadow = serializedObject.FindProperty("_shadow");
+            _shadowColor = serializedObject.FindProperty("_shadowColor");
+            _shadowOffset = serializedObject.FindProperty("_shadowOffset");
         }
         
         public override void OnInspectorGUI()
@@ -92,8 +99,15 @@ namespace Yorozu.FlatUI.Tool
                             }
                         }
                     }
-
                 }
+            }
+            
+            EditorGUILayout.PropertyField(_shadow);
+            using (new EditorGUI.IndentLevelScope())
+            using (new EditorGUI.DisabledScope(!_shadow.boolValue))
+            {
+                EditorGUILayout.PropertyField(_shadowColor, new GUIContent("Color"));
+                EditorGUILayout.PropertyField(_shadowOffset, new GUIContent("Offset"));
             }
 
             serializedObject.ApplyModifiedProperties();

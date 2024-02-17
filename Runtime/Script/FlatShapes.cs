@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Yorozu.FlatUI
@@ -45,18 +43,21 @@ namespace Yorozu.FlatUI
         [SerializeField, ColorUsage(false)]
         private Color _outlineColor;
 
-        protected override void OnPopulateMesh(ref List<UIVertex> vertexList)
+        protected override void OnPopulateMesh(ref List<UIVertex> vertexList, bool shadow)
         {
             var uv1Param = _floatValue;
             // w は int で使う
             uv1Param.w /= 50f;
 
-            float zValue = _outlineWidth;
+            float zValue = shadow ? (_innerClip ? _outlineWidth : 0) : _outlineWidth;
             if (_innerClip)
             {
                 zValue += 1;
             }
             var colorFloat = ColorToFloat(_outlineColor);
+            if (shadow && _innerClip)
+                colorFloat = ColorToFloat(_shadowColor);
+            
             for (var i = 0; i < vertexList.Count; i++)
             {
                 var vertex = vertexList[i];
