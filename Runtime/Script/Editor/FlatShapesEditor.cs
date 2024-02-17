@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,6 +14,8 @@ namespace Yorozu.FlatUI.Tool
         private SerializedProperty _outlineWidth;
         private SerializedProperty _outlineColor;
 
+        private FlatShapes _shapes;
+        
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -21,134 +24,52 @@ namespace Yorozu.FlatUI.Tool
             
             _outlineWidth = serializedObject.FindProperty("_outlineWidth");
             _outlineColor = serializedObject.FindProperty("_outlineColor");
+            
+            _shapes = target as FlatShapes; 
         }
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
             serializedObject.Update();
+            
+            var shape = (FlatShapes.ShapeType)_shapeType.intValue;
+            var p =  _shapes.GetInspectorParam(shape);
+            var vec = _floatValue.vector4Value;
             using (var check = new EditorGUI.ChangeCheckScope())
             {
                 EditorGUILayout.PropertyField(_shapeType);
                 if (check.changed)
                 {
-                    var vec = _floatValue.vector4Value;
-                    switch ((FlatShapes.ShapeType)_shapeType.intValue)
+                    var newP = _shapes.GetInspectorParam((FlatShapes.ShapeType)_shapeType.intValue);
+                    for (var i = 0; i < p.Length; i++)
                     {
-                        case FlatShapes.ShapeType.Circle:
-                            break;
-                        case FlatShapes.ShapeType.Polygon:
-                            vec.w = Mathf.Clamp(vec.w, 3, 12);
-                            break;
-                        case FlatShapes.ShapeType.RoundedPolygon:
-                            vec.x = Mathf.Clamp(vec.x, 0.01f, 0.7f);
-                            break;
-                        case FlatShapes.ShapeType.Star:
-                            vec.x = Mathf.Clamp(vec.x, 0.01f, 1f);
-                            vec.w = Mathf.Clamp(vec.w, 5, 12);
-                            break;
-                        case FlatShapes.ShapeType.Heart:
-                            break;
-                        case FlatShapes.ShapeType.Cross:
-                            vec.x = Mathf.Clamp(vec.x, 0.01f, 0.3f);
-                            break;
-                        case FlatShapes.ShapeType.Ring:
-                            vec.x = Mathf.Clamp(vec.x, 0.01f, 1f);
-                            break;
-                        case FlatShapes.ShapeType.Polar:
-                            vec.w = Mathf.Clamp(vec.w, 2, 20);
-                            break;
-                        case FlatShapes.ShapeType.Superellipse:
-                            _outlineWidth.floatValue = 0f;
-                            break;
-                        case FlatShapes.ShapeType.Arrow:
-                            vec.x = Mathf.Clamp(vec.x, 0.1f, 0.9f);
-                            vec.y = Mathf.Clamp(vec.x, 0.01f, 0.4f);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                        if (newP[i] == null)
+                            continue;
+
+                        vec[i] = newP[i].Clamp(vec[i]);
                     }
-                    _floatValue.vector4Value = vec;
+
+                    _floatValue.vector4Value = vec;;
                 }
             }
-
-            var shape = (FlatShapes.ShapeType)_shapeType.intValue;
             
-            var wv = (int)_floatValue.vector4Value.w;
-            using (var check =  new EditorGUI.ChangeCheckScope())
+            
+            var outline = _shapes.OutlineEnable(shape);
+            
+            if (outline)
             {
-                wv = shape switch
-                {
-                    FlatShapes.ShapeType.Polygon or FlatShapes.ShapeType.RoundedPolygon => EditorGUILayout.IntSlider("Polygon", wv, 3, 12),
-                    FlatShapes.ShapeType.Polar => EditorGUILayout.IntSlider("Polygon", wv, 2, 20),
-                    FlatShapes.ShapeType.Star => EditorGUILayout.IntSlider("Polygon", wv, 5, 12),
-                    _ => wv
-                };
-                if (check.changed)
-                {
-                    var vec = _floatValue.vector4Value;
-                    vec.w = wv;
-                    _floatValue.vector4Value = vec;
-                }
-            }
-
-            var vec4 = _floatValue.vector4Value;
-            using (var check = new EditorGUI.ChangeCheckScope())
-            {
-                switch (shape)
-                {
-                    case FlatShapes.ShapeType.RoundedPolygon:
-                        vec4.x = EditorGUILayout.Slider("Rounded", vec4.x, 0f, 0.7f);
-                        break;
-                    case FlatShapes.ShapeType.Cross:
-                        vec4.x = EditorGUILayout.Slider(_floatValue.displayName, vec4.x, 0.01f, 0.3f);
-                        break;
-                    case FlatShapes.ShapeType.Star or FlatShapes.ShapeType.Ring:
-                        vec4.x = EditorGUILayout.Slider("Rounded", vec4.x, 0.01f, 1f);
-                        break;
-                    case FlatShapes.ShapeType.Superellipse:
-                        vec4.x = EditorGUILayout.Slider(_floatValue.displayName, vec4.x, 0.2f, 10f);
-                        vec4.y = EditorGUILayout.Slider("Blur", vec4.y, 0, 0.5f);
-                        break;
-                    case FlatShapes.ShapeType.Polar:
-                    {
-                        var v = (int)vec4.x;
-                        vec4.x = (float)EditorGUILayout.IntSlider("Mode", v, 0, 3);
-                        break;
-                    }
-                    case FlatShapes.ShapeType.Arrow:
-                    {
-                        vec4.x = EditorGUILayout.Slider("Width", vec4.x, 0.1f, 0.9f);
-                        vec4.y = EditorGUILayout.Slider("LineWidth", vec4.y, 0.01f, 0.4f);
-                    }
-                        break;
-                }
-                
-                if (check.changed)
-                {
-                    _floatValue.vector4Value = vec4;
-                }
-            }
-
-            if (shape is FlatShapes.ShapeType.Circle or
-                FlatShapes.ShapeType.Heart or
-                FlatShapes.ShapeType.Polygon or
-                FlatShapes.ShapeType.RoundedPolygon or
-                FlatShapes.ShapeType.Star or
-                FlatShapes.ShapeType.Cross or
-                FlatShapes.ShapeType.Polar or
-                FlatShapes.ShapeType.Arrow
-               )
-            {
+                EditorGUILayout.LabelField("Outline", EditorStyles.boldLabel);
                 using (var check = new EditorGUI.ChangeCheckScope())
+                using (new EditorGUI.IndentLevelScope())
                 {
-                    bool clip = vec4.z > 0;
+                    bool clip = vec.z > 0;
                     using (new EditorGUI.DisabledGroupScope(_outlineWidth.floatValue <= 0))
                     {
-                        clip = EditorGUILayout.Toggle("Clip", clip); 
+                        clip = EditorGUILayout.Toggle("Inner Clip", clip); 
                     }
-                    EditorGUILayout.PropertyField(_outlineWidth);
-                    EditorGUILayout.PropertyField(_outlineColor);
+                    EditorGUILayout.PropertyField(_outlineWidth, new GUIContent("Width"));
+                    EditorGUILayout.PropertyField(_outlineColor, new GUIContent("Color"));
 
                     if (check.changed)
                     {
@@ -156,12 +77,42 @@ namespace Yorozu.FlatUI.Tool
                         {
                             clip = false;
                         }
-                        vec4.z = clip ? 1 : 0;
-                        _floatValue.vector4Value = vec4;
+                        vec.z = clip ? 1 : 0;
+                        _floatValue.vector4Value = vec;
                     }
                 }
             }
+            
+            using (var check =  new EditorGUI.ChangeCheckScope())
+            {
+                for (var i = 0; i < p.Length; i++)
+                {
+                    if (p[i] == null)
+                        continue;
 
+                    if (p[i].Int)
+                    {
+                        var iv = (int)vec[i];
+                        var min = Mathf.RoundToInt(p[i].Min);
+                        var max = Mathf.RoundToInt(p[i].Max);
+                        iv = EditorGUILayout.IntSlider(p[i].Name, iv, min, max);
+                        if (check.changed)
+                        {
+                            vec[i] = iv;
+                            _floatValue.vector4Value = vec;
+                        }
+                    }
+                    else
+                    {
+                        vec[i] = EditorGUILayout.Slider(p[i].Name, vec[i], p[i].Min, p[i].Max);
+                        if (check.changed)
+                        {
+                            _floatValue.vector4Value = vec;
+                        }
+                    }
+                }
+            }
+            
             serializedObject.ApplyModifiedProperties();
         }
 
