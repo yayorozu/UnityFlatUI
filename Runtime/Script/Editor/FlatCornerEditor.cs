@@ -57,18 +57,19 @@ namespace Yorozu.FlatUI.Tool
             {
                 EditorGUILayout.PropertyField(_flags);
                 EditorGUILayout.PropertyField(_radius);
-                EditorGUILayout.PropertyField(_type);
-                if (_type.intValue == (int) FlatCorner.Type.Outline)
-                {
-                    EditorGUILayout.PropertyField(_outline);
-                    EditorGUILayout.PropertyField(_color);
-                }
+            }
+            
+            EditorGUILayout.PropertyField(_type);
+            if (_type.intValue == (int) FlatCorner.Type.Outline)
+            {
+                EditorGUILayout.PropertyField(_outline);
+                EditorGUILayout.PropertyField(_color);
+            }
 
-                if (_type.intValue == (int) FlatCorner.Type.Separate)
-                {
-                    EditorGUILayout.PropertyField(_separate);
-                    EditorGUILayout.PropertyField(_color);
-                }
+            if (_type.intValue == (int) FlatCorner.Type.Separate)
+            {
+                EditorGUILayout.PropertyField(_separate);
+                EditorGUILayout.PropertyField(_color);
             }
             
             serializedObject.ApplyModifiedProperties();
