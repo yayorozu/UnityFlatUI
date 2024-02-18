@@ -169,8 +169,8 @@ float CalculateRingAlpha(float2 uv, float width, float outerStart = 1)
 {
     const float2 pos = (uv.xy - float2(0.5, 0.5)) * 2.0;
     const float len = length(pos);
-    const float inner = smoothstep(width, width, len);
-    const float outer = smoothstep(outerStart, outerStart, len);
+    const float inner = step(width, len);
+    const float outer = step(outerStart, len);
     return  inner - outer;
 }
 
@@ -196,7 +196,7 @@ half4 GaugeCircle(half4 baseColor, float4 uv0, float4 uv1)
     if (reverse > 0) {
         angle = 1 - angle;
     }
-
+    
     amount = lerp(0, amount, maxLength);
     const half cutoff = angle > amount ? 0 : 1;
 
