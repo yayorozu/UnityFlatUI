@@ -56,40 +56,80 @@
 			struct appdata
 			{
 				float4 vertex : POSITION;
-				float4 uv : TEXCOORD0;
-				float4 texcoord1 : TEXCOORD1;
 				half4 color : COLOR;
+				float4 uv : TEXCOORD0;
+				float4 uv1 : TEXCOORD1;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			struct v2f
 			{
-				float4 uv : TEXCOORD0;
 				float4 vertex : SV_POSITION;
 				half4 color : COLOR;
-				float4 texcoord1 : TEXCOORD1;
-				float4 worldPosition : TEXCOORD2;
+				float4 uv : TEXCOORD0;
+				float4 uv1 : TEXCOORD1;
+				float4 mask : TEXCOORD2;
+				float4 worldPosition : TEXCOORD3;
+				UNITY_VERTEX_OUTPUT_STEREO
 			};
+			
+			float4 _ClipRect;
+			float _UIMaskSoftnessX;
+            float _UIMaskSoftnessY;
+			int _UIVertexColorAlwaysGammaSpace;
 			
 			v2f vert(appdata v)
 			{
 				v2f o;
-				o.vertex = UnityObjectToClipPos(v.vertex);
+				UNITY_SETUP_INSTANCE_ID(v);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+				float4 vPosition = UnityObjectToClipPos(v.vertex);
+				
+				o.vertex = vPosition;
 				o.worldPosition = v.vertex;
 				o.uv = v.uv;
-				o.texcoord1 = v.texcoord1;
+				o.uv1 = v.uv1;
+				
+				float2 pixelSize = vPosition.w;
+                pixelSize /= float2(1, 1) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
+
+                float4 clampedRect = clamp(_ClipRect, -2e10, 2e10);
+				o.mask = float4(v.vertex.xy * 2 - clampedRect.xy - clampedRect.zw, 0.25 / (0.25 * half2(_UIMaskSoftnessX, _UIMaskSoftnessY) + abs(pixelSize.xy)));
+
+				if (_UIVertexColorAlwaysGammaSpace)
+                {
+                    if(!IsGammaSpace())
+                    {
+                        v.color.rgb = UIGammaToLinear(v.color.rgb);
+                    }
+                }
+
 				o.color = v.color;
+				
 				return o;
 			}
-			
-			float4 _ClipRect;
-			
+
 			half4 frag(v2f i) : SV_Target
 			{
-				half4 color = RoundedCornerFragment(i.color, i.uv, i.texcoord1);
-				color.a *= UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
+				const half alphaPrecision = half(0xff);
+                const half invAlphaPrecision = half(1.0/alphaPrecision);
+                i.color.a = round(i.color.a * alphaPrecision)*invAlphaPrecision;
+				
+				half4 color = RoundedCornerFragment(i.color, i.uv, i.uv1);
+				color.a *= i.color.a;
+
+				#ifdef UNITY_UI_CLIP_RECT
+                half2 m = saturate((_ClipRect.zw - _ClipRect.xy - abs(IN.mask.xy)) * IN.mask.zw);
+                color.a *= m.x * m.y;
+                #endif
+
+                #ifdef UNITY_UI_ALPHACLIP
+                clip (color.a - 0.001);
+                #endif
 				
 				return color;
 			}
+			
 			ENDCG
 		}
 	}
