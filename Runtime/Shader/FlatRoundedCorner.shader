@@ -116,7 +116,7 @@
                 i.color.a = round(i.color.a * alphaPrecision)*invAlphaPrecision;
 				
 				half4 color = RoundedCornerFragment(i.color, i.uv, i.uv1);
-				color.a *= i.color.a;
+				color.a *= i.color.a * UnityGet2DClipping(i.worldPosition.xy, _ClipRect);
 
 				#ifdef UNITY_UI_CLIP_RECT
                 half2 m = saturate((_ClipRect.zw - _ClipRect.xy - abs(IN.mask.xy)) * IN.mask.zw);
