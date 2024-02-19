@@ -12,13 +12,14 @@ namespace Yorozu.FlatUI
         
         protected RectTransform _rectTransform => transform as RectTransform;
         
-#if UNITY_EDITOR
         [NonSerialized]
         private int _parentId;
-
+        
         [NonSerialized]
         private Canvas _cacheCanvas;
-
+        
+#if UNITY_EDITOR
+        
         protected override void Reset()
         {
             base.Reset();
@@ -59,11 +60,11 @@ namespace Yorozu.FlatUI
             base.OnValidate();
             ReplaceMaterialIfNeeded(GetMaterialName());
 
-            var graphic = GetComponent<Graphic>();
-            graphic.SetVerticesDirty();
             SetCanvasChannel();
+            SetVerticesDirty();
         }
-
+#endif
+        
         /// <summary>
         /// Canvasのチャンネルを操作
         /// </summary>
@@ -98,7 +99,6 @@ namespace Yorozu.FlatUI
 
             _cacheCanvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
         }
-#endif
         
         [SerializeField, ColorUsage(false)]
         private Color _leftTopColor = Color.white;
@@ -144,7 +144,14 @@ namespace Yorozu.FlatUI
         protected int[] LeftBottomIndexes => new int[] {0, 5};
         protected int[] RightTopIndexes => new int[] {2, 3};
         protected int[] RightBottomIndexes => new int[] {4};
-        
+
+        protected override void Awake()
+        {
+            SetCanvasChannel();
+            SetVerticesDirty();
+            base.Awake();
+        }
+
         protected void UpdateColor(ref List<UIVertex> vertexList, int index, Color color)
         {
             var v = vertexList[index];
