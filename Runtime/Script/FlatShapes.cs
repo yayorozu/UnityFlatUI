@@ -26,6 +26,10 @@ namespace Yorozu.FlatUI
             Superellipse,
             Arrow,
             CheckMark,
+            /// <summary>
+            /// 虫眼鏡
+            /// </summary>
+            MagnifyingGlass,
         }
         
         [SerializeField]

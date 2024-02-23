@@ -176,6 +176,8 @@ namespace Yorozu.FlatUI.Tool
                     p[1] = new InspectorParam("Left", 0.3f, 0.5f);
                     p[2] = new InspectorParam("Right", 0.5f, 0.8f);
                     break;
+                case ShapeType.MagnifyingGlass:
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -187,21 +189,13 @@ namespace Yorozu.FlatUI.Tool
         {
             switch (shapeType)
             {
-                case ShapeType.Circle:
-                case ShapeType.Polygon:
-                case ShapeType.RoundedPolygon:
-                case ShapeType.Star:
-                case ShapeType.Heart:
-                case ShapeType.Polar:
-                case ShapeType.Arrow:
-                case ShapeType.CheckMark:
-                    return true;
                 case ShapeType.Superellipse:
                 case ShapeType.Cross:
                 case ShapeType.Ring:
+                case ShapeType.MagnifyingGlass:
                     return false;
                  default:
-                    throw new ArgumentOutOfRangeException(nameof(shapeType), shapeType, null);
+                    return true;
             }
         }
 

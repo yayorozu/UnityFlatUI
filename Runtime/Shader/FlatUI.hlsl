@@ -13,7 +13,7 @@ static float HALF_PI = PI / 2.0;
 
 #pragma shader_feature _ROUND_SHAPE_ROUND _ROUND_SHAPE_CUT
 
-#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_ROUNDED_POLYGON _SHAPE_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW _SHAPE_CHECK_MARK
+#pragma shader_feature _SHAPE_CIRCLE _SHAPE_POLYGON _SHAPE_ROUNDED_POLYGON _SHAPE_STAR _SHAPE_HEART _SHAPE_CROSS _SHAPE_RING _SHAPE_POLAR _SHAPE_SUPERELLIPSE _SHAPE_ARROW _SHAPE_CHECK_MARK _SHAPE_MAGNIFYING_GLASS
 
 // 三角形の内側かどうか
 bool isPointInsideTriangle(half2 p, half2 v0, half2 v1, half2 v2)
@@ -478,15 +478,15 @@ float Circle(float2 uv, float radius, float2 center)
 }
 
 // 角丸の四角形
-float RoundedRectangle(float2 uv, float2 a, float2 b, float width)
+float RoundedRectangle(float2 uv, float2 a, float2 b, float width, float left = 1, float right = 1)
 {
     const float2 center = (a + b) / 2;
     float2 to = a - b;
     const float angle = atan2(to.y, to.x) * (180 / PI);
     const float dist = distance(a, b);
     float v = RotateRectangle(uv, dist, width, -angle, center);
-    v += Circle(uv, width / 2, a);
-    v += Circle(uv, width / 2, b);
+    v += Circle(uv, width / 2, a) * left;
+    v += Circle(uv, width / 2, b) * right;
     return saturate(v);
 }
 
@@ -500,6 +500,18 @@ float CalculateCheckMark(float2 uv, float strength, float4 p)
     a += RoundedRectangle(uv, left, bottom, width);
     a += RoundedRectangle(uv, right, bottom, width);
     return saturate(a); 
+}
+
+float CalculateMagnifyingGlass(float2 uv, float strength, float4 p)
+{
+    const float ringWidth = lerp(0.5, 0.3, 0.5);
+    const float barWidth = lerp(0.05, 0.15, 0.5);
+    const float2 center = float2(0.6, 0.4);
+    const float2 right = float2(0.85, 0.15);
+    const float bar = RoundedRectangle(uv, center, right, barWidth, 0, 0);
+    uv += float2(0.1, -0.1);
+    const float ring = CalculateRingAlpha(uv, ringWidth, 0.6);
+    return saturate(ring + bar);  
 }
 
 float CalculateShapeAlpha(float2 uv, float strength, float4 params)
@@ -543,6 +555,9 @@ float CalculateShapeAlpha(float2 uv, float strength, float4 params)
 #elif _SHAPE_CHECK_MARK
 
     return CalculateCheckMark(uv, strength, params);
+#elif _SHAPE_MAGNIFYING_GLASS
+
+    return CalculateMagnifyingGlass(uv, strength, params);
 #endif
     return 0;
 }
