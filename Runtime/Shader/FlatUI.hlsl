@@ -279,15 +279,17 @@ half CalculateCircleAlpha(float2 uv, float strength)
 }
 
 // 多角形
-half CalculatePolygonAlpha(float2 uv, float strength, int numSides)
+half CalculatePolygonAlpha(float2 UV, float strength, int numSides)
 {
-    uv += - 0.5;
-    float radius = length(uv);
-    float theta = atan2(uv.x, uv.y) + 2.0 * PI;
-    theta = theta % (2.0 * PI / numSides);
-
-    float polygonDistance = cos(PI / numSides) / cos (PI / numSides - theta);
-    return  step(radius, polygonDistance * strength); 
+    strength *= 2;
+    float aWidth = strength * cos(PI / numSides);
+    float aHeight = strength * cos(PI / numSides);
+    float2 uv = (UV * 2 - 1) / float2(aWidth, aHeight);
+    uv.y *= -1;
+    const float pCoord = atan2(uv.x, uv.y);
+    float r = 2 * PI / numSides;
+    const float distance = cos(floor(0.5 + pCoord / r) * r - pCoord) * length(uv);
+    return saturate((1 - distance) / fwidth(distance));
 }
 
 half CalculateRoundedPolygon(float2 UV, float Width, float Height, float Sides, float Roundness)
