@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+
 using UnityEditor;
 using UnityEngine;
 
@@ -114,3 +116,5 @@ namespace Yorozu.FlatUI.Tool
         }
     }
 }
+
+#endif

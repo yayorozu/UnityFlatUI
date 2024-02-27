@@ -1,4 +1,6 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+
+using UnityEditor;
 
 namespace Yorozu.FlatUI.Tool
 {
@@ -76,3 +78,5 @@ namespace Yorozu.FlatUI.Tool
         }
     }
 }
+
+#endif
