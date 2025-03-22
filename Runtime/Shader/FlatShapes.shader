@@ -49,7 +49,7 @@
 
 			#include "UnityCG.cginc"
 			#include "UnityUI.cginc"
-			#include "FlatUI.hlsl"
+			#include_with_pragmas "FlatUI.hlsl"
 			
 			struct appdata
 			{

@@ -128,6 +128,7 @@ half Corner(float2 uv, half radius, half width, half height, int flag)
 #elif _ROUND_SHAPE_CUT
     return CutCorner(uv, radius, width, height, flag);
 #endif
+    return 1;
 }
 
 half4 RoundedCornerFragment(half4 baseColor, float4 uv, float4 uv1)
